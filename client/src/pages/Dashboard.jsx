@@ -39,11 +39,6 @@ function EligibilityTab({ results }) {
   )
 
   const handleSmartApply = async (schemeName, currentLink) => {
-    if (currentLink && !currentLink.includes('startupindia.gov.in') && currentLink !== '#') {
-      window.open(currentLink, '_blank')
-      return
-    }
-
     setLoadingLink(schemeName)
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/chat/smart-link`, {
@@ -259,11 +254,6 @@ function SummaryTab({ simplification, eligibilityResults }) {
   )
 
   const handleSmartApply = async (schemeName, currentLink) => {
-    if (currentLink && !currentLink.includes('startupindia.gov.in') && currentLink !== '#') {
-      window.open(currentLink, '_blank')
-      return
-    }
-
     setLoadingLink(schemeName)
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/chat/smart-link`, {

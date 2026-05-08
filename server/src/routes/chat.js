@@ -18,8 +18,8 @@ router.post('/', async (req, res) => {
 
     const eligibleSchemes = Array.isArray(context?.eligibilityResults)
       ? context.eligibilityResults
-          .filter(r => r.status === 'eligible' || r.status === 'partially_eligible')
-          .map(r => r.schemeName)
+        .filter(r => r.status === 'eligible' || r.status === 'partially_eligible')
+        .map(r => r.schemeName)
       : [];
 
     const groq = getGroqClient();
