@@ -566,9 +566,13 @@ function AIChatbot({ context }) {
         body: JSON.stringify({ message: userMsg, context })
       })
       const data = await res.json()
-      setMessages(prev => [...prev, { role: 'assistant', content: data.response }])
+      if (res.ok) {
+        setMessages(prev => [...prev, { role: 'assistant', content: data.response }])
+      } else {
+        setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${data.error || 'Server hiccup. Please try again.'}` }])
+      }
     } catch (err) {
-      setMessages(prev => [...prev, { role: 'assistant', content: "I'm sorry, I'm having trouble connecting right now. Please try again later." }])
+      setMessages(prev => [...prev, { role: 'assistant', content: "Connection error. Please check if the server is running." }])
     } finally {
       setIsTyping(false)
     }

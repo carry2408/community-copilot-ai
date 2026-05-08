@@ -20,12 +20,12 @@ export async function askGemini(prompt, options = {}) {
     const text = result.response.text();
     return text;
   } catch (error) {
-    console.error('Gemini API Error:', error.message);
+    console.error('Gemini API Error Detail:', error);
     if (error.message.includes('API_KEY_INVALID') || error.message.includes('API key not valid')) {
-      console.warn('⚠️ Gemini API key invalid — switching to fallback mode');
+      console.warn('⚠️ Gemini API key invalid');
       useGemini = false;
     }
-    throw error;
+    throw new Error(error.message || 'AI service failed');
   }
 }
 
