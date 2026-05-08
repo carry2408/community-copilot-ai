@@ -10,10 +10,7 @@ export const geminiModel = genAI.getGenerativeModel({
   }
 });
 
-let useGemini = true;
-
 export async function askGemini(prompt, options = {}) {
-  if (!useGemini) throw new Error('Gemini disabled — using fallbacks');
   try {
     const model = options.model ? genAI.getGenerativeModel({ model: options.model }) : geminiModel;
     const result = await model.generateContent(prompt);
@@ -21,10 +18,6 @@ export async function askGemini(prompt, options = {}) {
     return text;
   } catch (error) {
     console.error('Gemini API Error Detail:', error);
-    if (error.message.includes('API_KEY_INVALID') || error.message.includes('API key not valid')) {
-      console.warn('⚠️ Gemini API key invalid');
-      useGemini = false;
-    }
     throw new Error(error.message || 'AI service failed');
   }
 }
@@ -36,5 +29,5 @@ export async function askGeminiJSON(prompt) {
   return JSON.parse(cleaned);
 }
 
-export function isGeminiAvailable() { return useGemini; }
-export function resetGemini() { useGemini = true; }
+export function isGeminiAvailable() { return true; }
+export function resetGemini() { }
