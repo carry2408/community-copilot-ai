@@ -10,7 +10,7 @@ import {
   FileText, CheckCircle, Files, Map as MapIcon,
   CheckCircle2, AlertCircle, XCircle, Lightbulb,
   AlertTriangle, FileCheck, File, Clock, Zap, Target,
-  RotateCcw, Download, Loader2, Bot, ChevronRight, ArrowRight, Info
+  RotateCcw, Download, Loader2, Bot, ChevronRight, ArrowRight, Info, Sparkles
 } from 'lucide-react'
 
 function TabButton({ active, onClick, icon, children }) {
@@ -77,7 +77,7 @@ function EligibilityTab({ results }) {
 
             <div className="pt-5 border-t border-gray-50 flex items-center gap-3">
               <a
-                href={r.applyLink || "#"}
+                href={r.websiteUrl || r.applyLink || "https://www.startupindia.gov.in"}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-100"
@@ -243,40 +243,50 @@ function SummaryTab({ simplification, eligibilityResults }) {
       </div>
 
       {/* Structured Points as Cards */}
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {points.map((point, i) => (
-          <motion.div 
+          <motion.div
             key={i}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.1 }}
-            className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group"
+            className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-indigo-100 transition-all group"
           >
             <div className="flex justify-between items-start mb-4">
-              <h3 className="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
+              <h3 className="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors line-clamp-2 min-h-[3.5rem]">
                 {point.title}
               </h3>
-              <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                point.status?.includes('Fully') ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-amber-50 text-amber-600 border border-amber-100'
-              }`}>
+              <div className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${point.status?.includes('Fully') ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-amber-50 text-amber-600 border border-amber-100'
+                }`}>
                 {point.status}
               </div>
             </div>
-            
-            <p className="text-sm text-gray-600 mb-4 font-medium leading-relaxed">
+
+            <p className="text-sm text-gray-600 mb-6 font-medium leading-relaxed line-clamp-3">
               {point.details}
             </p>
 
-            <div className="flex items-center gap-2 text-xs font-bold py-2 px-3 bg-gray-50 rounded-lg text-gray-700">
-              <Sparkles size={14} className="text-indigo-500" />
-              {point.action}
+            <div className="space-y-4 pt-4 border-t border-gray-50">
+              <div className="flex items-center gap-2 text-xs font-bold p-2 bg-gray-50 rounded-lg text-gray-700">
+                <Sparkles size={14} className="text-indigo-500 shrink-0" />
+                <span className="line-clamp-1">{point.action}</span>
+              </div>
+
+              <a
+                href={point.link || "https://www.startupindia.gov.in"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
+              >
+                Apply Online <ArrowRight size={14} />
+              </a>
             </div>
           </motion.div>
         ))}
       </div>
 
       {/* Outro */}
-      <div className="p-6 bg-indigo-50 rounded-2xl border border-indigo-100 text-indigo-900 font-bold text-center">
+      <div className="p-6 bg-gray-900 rounded-2xl border border-gray-800 text-white font-bold text-center shadow-lg">
         {simplification.outro}
       </div>
     </div>
