@@ -230,7 +230,17 @@ function SummaryTab({ simplification, eligibilityResults }) {
 
   const points = simplification.points || []
   const hasPoints = points.length > 0
-  const oldSummary = simplification.summary || (typeof simplification === 'string' ? simplification : null)
+  
+  const cleanText = (text) => {
+    if (typeof text !== 'string') return '';
+    return text
+      .replace(/\*\*/g, '') // Remove bold
+      .replace(/[✅🎉❌⚠️🚀📋]/gu, '') // Remove unprofessional emojis
+      .replace(/^[\s\d.-]+/gm, '') // Remove starting numbers/dots/dashes
+      .trim();
+  }
+
+  const oldSummary = cleanText(simplification.summary || (typeof simplification === 'string' ? simplification : ''))
 
   return (
     <div className="space-y-8">
