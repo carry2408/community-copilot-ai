@@ -245,30 +245,39 @@ export default function Dashboard() {
   // Load from DB or Save to DB
   useEffect(() => {
     const handleDB = async () => {
+      // If we already have results in the store (from local persistence), stop loading immediately
+      if (status === 'completed' && eligibilityResults?.length > 0) {
+        setIsLoadingDB(false)
+        
+        // Background sync to cloud (if logged in)
+        if (currentUser) {
+          saveUserResults(currentUser.uid, { eligibilityResults, simplification, documents, roadmap })
+            .catch(err => console.warn("Background cloud sync failed:", err))
+        }
+        return
+      }
+
       if (!currentUser) {
         setIsLoadingDB(false)
         return
       }
 
+      // Try to fetch from DB if we are empty
       try {
-        if (status === 'completed') {
-          // We just finished a workflow, save it!
-          await saveUserResults(currentUser.uid, { eligibilityResults, simplification, documents, roadmap })
-        } else {
-          // We arrived here empty, try to fetch from DB
-          const savedData = await getUserResults(currentUser.uid)
-          if (savedData) {
-            setResults(savedData)
-          }
+        const savedData = await getUserResults(currentUser.uid)
+        if (savedData) {
+          setResults(savedData)
         }
       } catch (error) {
-        console.warn("Database sync failed (likely blocked by client):", error)
+        console.warn("Database fetch failed:", error)
       } finally {
         setIsLoadingDB(false)
       }
     }
+    
     handleDB()
-  }, [currentUser, status, eligibilityResults, simplification, documents, roadmap, setResults])
+    // We only want to run this once when the user or mount status changes
+  }, [currentUser])
 
   const exportPDF = async () => {
     if (!contentRef.current) return
