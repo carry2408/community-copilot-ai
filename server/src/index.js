@@ -19,6 +19,12 @@ app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Dat
 app.use('/api/workflow', workflowRouter);
 app.use('/api/schemes', schemesRouter);
 
-app.listen(PORT, () => {
-  console.log(` Community Copilot Server running on port ${PORT}`);
-});
+// Local dev server
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`🚀 Community Copilot Server running on port ${PORT}`);
+  });
+}
+
+// Export for Vercel serverless
+export default app;
