@@ -244,25 +244,26 @@ export default function Dashboard() {
 
   // Load from DB or Save to DB
   useEffect(() => {
+    let timeoutId;
+    
     const handleDB = async () => {
-      // If we already have results in the store (from local persistence), stop loading immediately
+      // 1. Instant Recovery: If we already have results locally, stop loading NOW
       if (status === 'completed' && eligibilityResults?.length > 0) {
         setIsLoadingDB(false)
-        
-        // Background sync to cloud (if logged in)
-        if (currentUser) {
-          saveUserResults(currentUser.uid, { eligibilityResults, simplification, documents, roadmap })
-            .catch(err => console.warn("Background cloud sync failed:", err))
-        }
         return
       }
+
+      // 2. Safety Timeout: Don't hang for more than 2 seconds
+      timeoutId = setTimeout(() => {
+        setIsLoadingDB(false)
+      }, 2000)
 
       if (!currentUser) {
         setIsLoadingDB(false)
         return
       }
 
-      // Try to fetch from DB if we are empty
+      // 3. Try cloud fetch
       try {
         const savedData = await getUserResults(currentUser.uid)
         if (savedData) {
@@ -272,12 +273,13 @@ export default function Dashboard() {
         console.warn("Database fetch failed:", error)
       } finally {
         setIsLoadingDB(false)
+        if (timeoutId) clearTimeout(timeoutId)
       }
     }
     
     handleDB()
-    // We only want to run this once when the user or mount status changes
-  }, [currentUser])
+    return () => { if (timeoutId) clearTimeout(timeoutId) }
+  }, [currentUser, status, eligibilityResults?.length])
 
   const exportPDF = async () => {
     if (!contentRef.current) return
