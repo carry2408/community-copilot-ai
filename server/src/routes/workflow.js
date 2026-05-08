@@ -41,6 +41,25 @@ workflowRouter.get('/:id/stream', (req, res) => {
 
   res.write(`data: ${JSON.stringify({ agent: 'System', status: 'connected', message: 'Connected to workflow stream' })}\n\n`);
 
+  // Check current workflow state and send immediate update if already in progress/done
+  const workflow = orchestrator.getWorkflow(req.params.id);
+  if (workflow) {
+    if (workflow.status === 'awaiting_answers') {
+      res.write(`data: ${JSON.stringify({ 
+        agent: 'Eligibility Interview Agent', 
+        status: 'awaiting_answers', 
+        interviewQuestions: workflow.results.interviewQuestions,
+        schemes: workflow.results.research.schemes
+      })}\n\n`);
+    } else if (workflow.status === 'completed') {
+      res.write(`data: ${JSON.stringify({ 
+        agent: 'Orchestrator', 
+        status: 'completed', 
+        results: workflow.results 
+      })}\n\n`);
+    }
+  }
+
   // Keep-alive heartbeat every 15s to prevent connection reset
   const heartbeat = setInterval(() => {
     res.write(':heartbeat\n\n');

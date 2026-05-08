@@ -159,7 +159,7 @@ export class Orchestrator {
         workflow.status = 'error';
       }
       this.emit(workflowId, {
-        agent: 'Orchestrator', emoji: '❌', color: '#ef4444',
+        agent: 'Orchestrator', emoji: '', color: '#ef4444',
         status: 'error', message: `Error: ${error.message}`
       });
     }
