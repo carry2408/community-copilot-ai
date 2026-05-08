@@ -6,8 +6,8 @@ import { useAuth } from '../contexts/AuthContext'
 import { saveUserResults, getUserResults } from '../services/db'
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
-import { 
-  FileText, CheckCircle, Files, Map as MapIcon, 
+import {
+  FileText, CheckCircle, Files, Map as MapIcon,
   CheckCircle2, AlertCircle, XCircle, Lightbulb,
   AlertTriangle, FileCheck, File, Clock, Zap, Target,
   RotateCcw, Download, Loader2, Bot, ChevronRight, ArrowRight, Info
@@ -16,9 +16,8 @@ import {
 function TabButton({ active, onClick, icon, children }) {
   return (
     <button onClick={onClick}
-      className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 border ${
-        active ? 'bg-white border-gray-200 text-indigo-600 shadow-sm' : 'bg-transparent border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-100'
-      }`}>
+      className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 border ${active ? 'bg-white border-gray-200 text-indigo-600 shadow-sm' : 'bg-transparent border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+        }`}>
       {icon}
       {children}
     </button>
@@ -39,7 +38,7 @@ function EligibilityTab({ results }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {results.map((r, i) => (
-        <motion.div 
+        <motion.div
           key={r.schemeId || i}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -48,11 +47,10 @@ function EligibilityTab({ results }) {
         >
           <div className="p-6">
             <div className="flex justify-between items-start mb-4">
-              <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                r.status === 'eligible' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 
-                r.status === 'partially_eligible' ? 'bg-amber-50 text-amber-600 border border-amber-100' : 
-                'bg-gray-50 text-gray-600 border border-gray-100'
-              }`}>
+              <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${r.status === 'eligible' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
+                  r.status === 'partially_eligible' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
+                    'bg-gray-50 text-gray-600 border border-gray-100'
+                }`}>
                 {r.status?.replace('_', ' ')}
               </div>
               <div className="flex items-center gap-1 text-indigo-600 font-bold text-lg">
@@ -78,9 +76,9 @@ function EligibilityTab({ results }) {
             </div>
 
             <div className="pt-5 border-t border-gray-50 flex items-center gap-3">
-              <a 
-                href={r.applyLink || "#"} 
-                target="_blank" 
+              <a
+                href={r.applyLink || "#"}
+                target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-100"
               >
@@ -120,7 +118,7 @@ function DocumentsTab({ documents }) {
           ))}
         </div>
       )}
-      
+
       {/* Categories */}
       {(documents.categories || []).map((cat, i) => (
         <motion.div key={i} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
@@ -137,9 +135,8 @@ function DocumentsTab({ documents }) {
                     <Clock size={12} /> {doc.estimatedTime}
                   </div>
                 </div>
-                <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
-                  doc.priority === 'high' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'
-                }`}>
+                <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${doc.priority === 'high' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'
+                  }`}>
                   {doc.priority.toUpperCase()}
                 </span>
               </div>
@@ -192,7 +189,7 @@ function RoadmapTab({ roadmap }) {
                   <ul className="space-y-1.5 bg-gray-50 p-3 rounded-lg border border-gray-100">
                     {step.actionItems.map((item, k) => (
                       <li key={k} className="text-xs flex items-start gap-2 text-gray-600 font-medium">
-                        <Target size={14} className="text-indigo-400 shrink-0 mt-0.5" /> 
+                        <Target size={14} className="text-indigo-400 shrink-0 mt-0.5" />
                         {item}
                       </li>
                     ))}
@@ -227,54 +224,61 @@ function SummaryTab({ simplification, eligibilityResults }) {
   if (!simplification) return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
       <Loader2 className="animate-spin text-indigo-500 mb-4" size={32} />
-      <p className="text-gray-500 text-sm">Generating your AI executive summary...</p>
+      <p className="text-gray-500 text-sm">Generating your professional report...</p>
     </div>
   )
 
-  const topMatches = (eligibilityResults || []).filter(r => r.status === 'eligible' || r.status === 'partially_eligible').slice(0, 2)
+  const points = simplification.points || []
 
   return (
     <div className="space-y-8">
-      {/* AI Summary Card */}
-      <div className="bg-indigo-900 rounded-[2.5rem] p-8 lg:p-10 text-white shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-20 -mt-20 blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-indigo-500/20 rounded-full -ml-10 -mb-10 blur-3xl"></div>
-        
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20 shadow-inner">
-              <Bot size={24} className="text-indigo-200" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold">AI Executive Summary</h2>
-              <div className="text-xs text-indigo-300 font-medium flex items-center gap-1.5 mt-0.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></div> 
-                Updated just now
-              </div>
-            </div>
-          </div>
-
-          <div className="text-base lg:text-lg leading-relaxed text-indigo-50/90 whitespace-pre-wrap font-medium max-w-3xl">
-            {simplification.summary}
-          </div>
-        </div>
+      {/* Intro section */}
+      <div className="max-w-3xl">
+        <h2 className="text-2xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+          <Bot className="text-indigo-600" /> Executive Summary
+        </h2>
+        <p className="text-gray-600 leading-relaxed font-medium">
+          {simplification.intro}
+        </p>
       </div>
 
-      {/* Featured Matches */}
-      {topMatches.length > 0 && (
-        <div className="space-y-4">
-          <div className="flex justify-between items-end">
-            <div>
-              <h3 className="text-lg font-bold text-gray-900">Recommended for You</h3>
-              <p className="text-sm text-gray-500">The best matching schemes based on your profile.</p>
+      {/* Structured Points as Cards */}
+      <div className="space-y-4">
+        {points.map((point, i) => (
+          <motion.div 
+            key={i}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.1 }}
+            className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group"
+          >
+            <div className="flex justify-between items-start mb-4">
+              <h3 className="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                {point.title}
+              </h3>
+              <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                point.status?.includes('Fully') ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-amber-50 text-amber-600 border border-amber-100'
+              }`}>
+                {point.status}
+              </div>
             </div>
-            <button className="text-sm font-bold text-indigo-600 flex items-center gap-1 hover:gap-2 transition-all">
-              View all results <ChevronRight size={16} />
-            </button>
-          </div>
-          <EligibilityTab results={topMatches} />
-        </div>
-      )}
+            
+            <p className="text-sm text-gray-600 mb-4 font-medium leading-relaxed">
+              {point.details}
+            </p>
+
+            <div className="flex items-center gap-2 text-xs font-bold py-2 px-3 bg-gray-50 rounded-lg text-gray-700">
+              <Sparkles size={14} className="text-indigo-500" />
+              {point.action}
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Outro */}
+      <div className="p-6 bg-indigo-50 rounded-2xl border border-indigo-100 text-indigo-900 font-bold text-center">
+        {simplification.outro}
+      </div>
     </div>
   )
 }
@@ -291,7 +295,7 @@ export default function Dashboard() {
   // Load from DB or Save to DB
   useEffect(() => {
     let timeoutId;
-    
+
     const handleDB = async () => {
       // 1. Instant Recovery: If we already have results locally, stop loading NOW
       if (status === 'completed' && eligibilityResults?.length > 0) {
@@ -322,7 +326,7 @@ export default function Dashboard() {
         if (timeoutId) clearTimeout(timeoutId)
       }
     }
-    
+
     handleDB()
     return () => { if (timeoutId) clearTimeout(timeoutId) }
   }, [currentUser, status, eligibilityResults?.length])
@@ -379,7 +383,7 @@ export default function Dashboard() {
     <div className="min-h-screen pt-32 pb-12 bg-gray-50">
       <div className="max-w-[1400px] w-full mx-auto px-6 md:px-12 lg:px-16">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 lg:gap-12 items-start">
-          
+
           {/* Sidebar */}
           <div className="lg:col-span-1 lg:sticky lg:top-32 space-y-8" data-html2canvas-ignore={isExporting}>
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
@@ -395,9 +399,8 @@ export default function Dashboard() {
             <div className="flex flex-col gap-2">
               {tabs.map(t => (
                 <button key={t.id} onClick={() => setActiveTab(t.id)}
-                  className={`px-4 py-3 rounded-xl text-sm font-medium transition-all flex items-center gap-3 border ${
-                    activeTab === t.id ? 'bg-white border-gray-200 text-indigo-600 shadow-sm' : 'bg-transparent border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-200/50'
-                  }`}>
+                  className={`px-4 py-3 rounded-xl text-sm font-medium transition-all flex items-center gap-3 border ${activeTab === t.id ? 'bg-white border-gray-200 text-indigo-600 shadow-sm' : 'bg-transparent border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-200/50'
+                    }`}>
                   {t.icon}
                   {t.label}
                 </button>
@@ -420,7 +423,7 @@ export default function Dashboard() {
           {/* Main Content */}
           <div className="lg:col-span-3">
             <div ref={contentRef} className="p-2 sm:p-4 -m-2 sm:-m-4 rounded-2xl" style={{ background: isExporting ? '#f9fafb' : 'transparent' }}>
-              
+
               {/* Optional header for PDF export visibility */}
               {isExporting && (
                 <div className="mb-8 pb-4 border-b border-gray-200">

@@ -13,48 +13,49 @@ export class SimplificationAgent extends BaseAgent {
 
     if (isGeminiAvailable()) {
       try {
-        const prompt = `You are a friendly government scheme advisor who explains things simply in plain English (with some Hindi terms where helpful).
+        const prompt = `You are a professional government scheme advisor.
+Review these eligibility results and create a structured professional summary.
 
-The user checked eligibility for government funding schemes. Here are the results:
+RESULTS:
+${eligible.map(r => `- ${r.schemeName}: ${r.status}`).join('\n')}
 
-ELIGIBLE/PARTIALLY ELIGIBLE:
-${eligible.map(r => `- ${r.schemeName}: ${r.status} (${r.reasons.join(', ')})`).join('\n') || 'None'}
+Format your response as a JSON object with:
+1. "intro": A professional opening (1-2 sentences)
+2. "points": An array of objects with:
+   - "title": Scheme name (no markdown symbols)
+   - "status": Eligible or Partially Eligible
+   - "details": 1 sentence explanation
+   - "action": What is missing or next step
+3. "outro": A motivating closing statement
 
-NOT ELIGIBLE:
-${notEligible.map(r => `- ${r.schemeName}: ${r.reasons.join(', ')}`).join('\n') || 'None'}
-
-Write a clear, encouraging summary (200-300 words) that:
-1. Celebrates what they qualify for
-2. Explains WHY they're eligible in simple language
-3. For partially eligible ones, explains what's missing
-4. For ineligible ones, briefly explains why without being discouraging
-5. Ends with a motivating next step
-
-Use simple language. Avoid jargon. Be warm and helpful like a knowledgeable friend.`;
-        const summary = await askGemini(prompt);
-        return { summary, eligibleCount: eligible.length, totalChecked: eligibilityResults.length };
+Respond ONLY with JSON.`;
+        const result = await askGeminiJSON(prompt);
+        return { 
+          structured: true,
+          intro: result.intro,
+          points: result.points,
+          outro: result.outro,
+          eligibleCount: eligible.length, 
+          totalChecked: eligibilityResults.length 
+        };
       } catch (e) {
-        console.log('SimplificationAgent falling back to template summary');
+        console.log('SimplificationAgent fallback');
       }
     }
 
-    // Fallback summary
-    const lines = [];
-    if (eligible.length > 0) {
-      lines.push(`🎉 Great news! You are eligible for ${eligible.length} government funding scheme${eligible.length > 1 ? 's' : ''}!\n`);
-      eligible.forEach(r => {
-        lines.push(`✅ **${r.schemeName}** — ${r.status === 'eligible' ? 'Fully Eligible' : 'Partially Eligible'}`);
-        lines.push(`   ${r.reasons[0] || 'Meets basic criteria'}`);
-        if (r.missingRequirements?.length) lines.push(`   ⚠️ Still needed: ${r.missingRequirements.join(', ')}`);
-        lines.push('');
-      });
-    }
-    if (notEligible.length > 0) {
-      lines.push(`\n📋 ${notEligible.length} scheme${notEligible.length > 1 ? 's' : ''} didn't match your current profile, but that's okay — you can work towards eligibility!\n`);
-      notEligible.forEach(r => lines.push(`   ❌ ${r.schemeName}: ${r.missingRequirements?.[0] || 'Requirements not met'}`));
-    }
-    lines.push(`\n🚀 Next Step: Start with the document checklist below and begin your application process. You've got this!`);
-
-    return { summary: lines.join('\n'), eligibleCount: eligible.length, totalChecked: eligibilityResults.length };
+    // Fallback structured data
+    return {
+      structured: true,
+      intro: `Great news! You qualify for ${eligible.length} government schemes.`,
+      points: eligible.map(r => ({
+        title: r.schemeName.replace(/\*\*/g, ''),
+        status: r.status === 'eligible' ? 'Fully Eligible' : 'Partially Eligible',
+        details: r.reasons[0] || 'Meets basic criteria',
+        action: r.missingRequirements?.length ? `Still needed: ${r.missingRequirements.join(', ')}` : 'Ready to apply'
+      })),
+      outro: "Next Step: Start with the document checklist below.",
+      eligibleCount: eligible.length,
+      totalChecked: eligibilityResults.length
+    };
   }
 }
