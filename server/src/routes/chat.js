@@ -8,11 +8,20 @@ router.post('/', async (req, res) => {
   const { message, context } = req.body;
 
   try {
+    // Only send essential context to save tokens and prevent 500 errors
+    const simplifiedContext = {
+      eligibleSchemes: context?.eligibilityResults
+        ?.filter(r => r.status === 'eligible' || r.status === 'partially_eligible')
+        .map(r => `${r.schemeName} (${r.status})`) || [],
+      summary: context?.simplification?.intro || ''
+    };
+
     const prompt = `You are the Community Copilot AI Assistant. 
 You are helping a business owner with their government scheme eligibility results.
 
-CONTEXT OF THEIR RESULTS:
-${JSON.stringify(context, null, 2)}
+BUSINESS CONTEXT:
+Eligible Schemes: ${simplifiedContext.eligibleSchemes.join(', ')}
+Summary: ${simplifiedContext.summary}
 
 USER QUESTION:
 ${message}
@@ -23,7 +32,7 @@ Provide a professional, helpful, and concise response. If they ask about applyin
     res.json({ response });
   } catch (error) {
     console.error('Chat error:', error);
-    res.status(500).json({ error: 'Failed to get AI response' });
+    res.status(500).json({ error: error.message || 'Failed to get AI response' });
   }
 });
 
