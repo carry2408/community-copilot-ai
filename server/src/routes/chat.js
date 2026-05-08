@@ -1,5 +1,5 @@
 import express from 'express';
-import { askGemini } from '../config/gemini.js';
+import { askChatGemini } from '../config/gemini.js';
 
 const router = express.Router();
 
@@ -29,7 +29,7 @@ ${message}
 
 Provide a professional, helpful, and concise response. If they ask about applying for a specific scheme, provide the most official link you know for that scheme.`;
 
-    const response = await askGemini(prompt);
+    const response = await askChatGemini(prompt);
     res.json({ response });
   } catch (error) {
     console.error('Chat AI Error:', error.message);
@@ -45,7 +45,7 @@ router.post('/smart-link', async (req, res) => {
     const prompt = `Find the EXACT official application portal URL for: "${schemeName}".
 Respond ONLY with the URL. No markdown. No text.`;
 
-    const response = await askGemini(prompt);
+    const response = await askChatGemini(prompt);
     const url = response.trim().match(/https?:\/\/[^\s]+/)?.[0] || response.trim();
     res.json({ url });
   } catch (error) {
