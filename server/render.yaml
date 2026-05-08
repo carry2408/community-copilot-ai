@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: community-copilot-api
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node src/index.js
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
