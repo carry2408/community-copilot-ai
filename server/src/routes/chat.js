@@ -1,52 +1,74 @@
 import express from 'express';
-import { askChatGemini } from '../config/gemini.js';
+import Groq from 'groq-sdk';
 
 const router = express.Router();
 
-// Main Chatbot Endpoint
+function getGroqClient() {
+  const key = (process.env.GROQ_API_KEY || '').trim();
+  if (!key) throw new Error('GROQ_API_KEY is not set in .env');
+  return new Groq({ apiKey: key });
+}
+
+// Main Chatbot Endpoint — powered by Groq (Llama 3)
 router.post('/', async (req, res) => {
   const { message, context } = req.body;
 
   try {
-    console.log('AI Chat Request received');
+    console.log('Groq Chat Request received');
 
-    // Safe Context Filtering
-    const eligibleSchemes = Array.isArray(context?.eligibilityResults) 
+    const eligibleSchemes = Array.isArray(context?.eligibilityResults)
       ? context.eligibilityResults
           .filter(r => r.status === 'eligible' || r.status === 'partially_eligible')
           .map(r => r.schemeName)
       : [];
 
-    const prompt = `You are the Community Copilot AI Assistant. 
-You are helping a business owner with their government scheme eligibility results.
+    const groq = getGroqClient();
+    const completion = await groq.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      messages: [
+        {
+          role: 'system',
+          content: `You are the Community Copilot AI Assistant — a professional advisor helping Indian business owners navigate government schemes and subsidies.
 
-BUSINESS CONTEXT:
-Eligible Schemes: ${eligibleSchemes.join(', ') || 'None found yet'}
-Summary: ${context?.simplification?.intro || 'New analysis needed'}
+The user's eligible schemes are: ${eligibleSchemes.join(', ') || 'None found yet'}
+Summary: ${context?.simplification?.intro || ''}
 
-USER QUESTION:
-${message}
+Be concise, professional, and helpful. If asked about applying for a scheme, provide the most official government portal link you know.`
+        },
+        { role: 'user', content: message }
+      ],
+      temperature: 0.7,
+      max_tokens: 1024,
+    });
 
-Provide a professional, helpful, and concise response. If they ask about applying for a specific scheme, provide the most official link you know for that scheme.`;
-
-    const response = await askChatGemini(prompt);
+    const response = completion.choices[0]?.message?.content || 'Sorry, I could not generate a response.';
     res.json({ response });
   } catch (error) {
-    console.error('Chat AI Error:', error.message);
-    res.status(500).json({ error: error.message || 'Internal AI Error' });
+    console.error('Groq Chat Error:', error.message);
+    res.status(500).json({ error: error.message || 'Chat AI failed' });
   }
 });
 
-// Smart Link Discovery Endpoint
+// Smart Link Discovery — also powered by Groq
 router.post('/smart-link', async (req, res) => {
   const { schemeName } = req.body;
 
   try {
-    const prompt = `Find the EXACT official application portal URL for: "${schemeName}".
-Respond ONLY with the URL. No markdown. No text.`;
+    const groq = getGroqClient();
+    const completion = await groq.chat.completions.create({
+      model: 'llama-3.1-8b-instant',
+      messages: [
+        {
+          role: 'user',
+          content: `What is the EXACT official application portal URL for the Indian government scheme: "${schemeName}"? Respond with ONLY the URL, nothing else.`
+        }
+      ],
+      temperature: 0.1,
+      max_tokens: 100,
+    });
 
-    const response = await askChatGemini(prompt);
-    const url = response.trim().match(/https?:\/\/[^\s]+/)?.[0] || response.trim();
+    const raw = completion.choices[0]?.message?.content?.trim() || '';
+    const url = raw.match(/https?:\/\/[^\s]+/)?.[0] || raw;
     res.json({ url });
   } catch (error) {
     console.error('Smart Link Error:', error.message);
