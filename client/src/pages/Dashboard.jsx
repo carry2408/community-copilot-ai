@@ -250,16 +250,20 @@ export default function Dashboard() {
         return
       }
 
-      if (status === 'completed') {
-        // We just finished a workflow, save it!
-        await saveUserResults(currentUser.uid, { eligibilityResults, simplification, documents, roadmap })
-        setIsLoadingDB(false)
-      } else {
-        // We arrived here empty, try to fetch from DB
-        const savedData = await getUserResults(currentUser.uid)
-        if (savedData) {
-          setResults(savedData)
+      try {
+        if (status === 'completed') {
+          // We just finished a workflow, save it!
+          await saveUserResults(currentUser.uid, { eligibilityResults, simplification, documents, roadmap })
+        } else {
+          // We arrived here empty, try to fetch from DB
+          const savedData = await getUserResults(currentUser.uid)
+          if (savedData) {
+            setResults(savedData)
+          }
         }
+      } catch (error) {
+        console.warn("Database sync failed (likely blocked by client):", error)
+      } finally {
         setIsLoadingDB(false)
       }
     }

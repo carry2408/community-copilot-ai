@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -26,11 +26,12 @@ export const googleProvider = new GoogleAuthProvider();
 export const signInWithGoogle = async () => {
   if (!auth) throw new Error("Firebase config missing");
   try {
-    const result = await signInWithPopup(auth, googleProvider);
-    return result.user;
+    // Try popup first (better UX)
+    await signInWithPopup(auth, googleProvider);
   } catch (error) {
-    console.error("Error signing in with Google:", error);
-    throw error;
+    // If popup is blocked or COOP error occurs, fallback to redirect
+    console.warn("Popup blocked or failed, falling back to redirect...", error.code);
+    await signInWithRedirect(auth, googleProvider);
   }
 };
 
@@ -40,7 +41,6 @@ export const logOut = async () => {
     await signOut(auth);
   } catch (error) {
     console.error("Error signing out:", error);
-    throw error;
   }
 };
 

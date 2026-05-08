@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom'
 import Landing from './pages/Landing'
+import Auth from './pages/Auth'
 import Onboarding from './pages/Onboarding'
 import Workflow from './pages/Workflow'
 import Dashboard from './pages/Dashboard'
@@ -14,6 +15,7 @@ export default function App() {
         <Navbar />
         <Routes>
           <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Auth />} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route 
             path="/workflow" 

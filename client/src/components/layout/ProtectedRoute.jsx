@@ -1,9 +1,10 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion } from 'framer-motion';
 
 export default function ProtectedRoute({ children }) {
   const { currentUser, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -16,9 +17,9 @@ export default function ProtectedRoute({ children }) {
     );
   }
 
-  if (!currentUser) {
-    // Redirect to home if not logged in
-    return <Navigate to="/" replace />;
+  if (!currentUser && false) {
+    // Redirect to login if not logged in
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   return children;

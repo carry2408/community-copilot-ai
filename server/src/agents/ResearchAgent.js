@@ -22,7 +22,7 @@ export class ResearchAgent extends BaseAgent {
       
       // State filter
       const stateMatch = e.states.includes('All India') || 
-                         e.states.map(s => s.toLowerCase()).includes(state.toLowerCase());
+                         e.states.map(s => s?.toLowerCase()).includes((state || '').toLowerCase());
       if (!stateMatch) return false;
 
       // Business type filter (loose match)

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useWorkflowStore } from '../store/workflowStore'
 import { submitAnswers } from '../services/api'
-import { CheckCircle2, CircleDashed, Loader2, Mic, Bot, Sparkles, Send, Activity } from 'lucide-react'
+import { CheckCircle2, CircleDashed, Loader2, Mic, Bot, Sparkles, Send, Activity, AlertCircle, RotateCcw } from 'lucide-react'
 
 const AGENT_ORDER = [
   'Intent Agent', 'Research Agent', 'Eligibility Interview Agent',
@@ -208,6 +208,24 @@ export default function Workflow() {
                 </div>
                 <h2 className="text-2xl font-bold mb-2 text-gray-900 tracking-tight">Analysis Complete!</h2>
                 <p className="text-gray-500">Redirecting to your results dashboard...</p>
+              </motion.div>
+            ) : status === 'error' ? (
+              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+                className="glass-card p-12 text-center bg-white border border-red-100 shadow-sm">
+                <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <AlertCircle size={32} />
+                </div>
+                <h2 className="text-2xl font-bold mb-2 text-gray-900 tracking-tight">Analysis Interrupted</h2>
+                <p className="text-gray-500 mb-8 max-w-sm mx-auto">
+                  {agentEvents.find(e => e.status === 'error')?.message || 'An unexpected error occurred during analysis.'}
+                </p>
+                <button 
+                  onClick={() => window.location.reload()} 
+                  className="flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-xl font-semibold hover:bg-gray-800 transition-all mx-auto"
+                >
+                  <RotateCcw size={18} />
+                  Retry Analysis
+                </button>
               </motion.div>
             ) : (
               <div className="glass-card p-12 text-center bg-white border border-gray-200">

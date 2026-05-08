@@ -26,5 +26,13 @@ if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
   });
 }
 
+// Global Error Catching
+process.on('unhandledRejection', (reason, promise) => {
+  console.error(' Unhandled Rejection at:', promise, 'reason:', reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error(' Uncaught Exception:', err);
+});
+
 // Export for Vercel serverless
 export default app;

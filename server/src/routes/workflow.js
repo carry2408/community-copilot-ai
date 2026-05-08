@@ -32,18 +32,24 @@ workflowRouter.post('/start', async (req, res) => {
 
 // SSE stream for real-time agent updates
 workflowRouter.get('/:id/stream', (req, res) => {
-  res.writeHead(200, {
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive',
-    'Access-Control-Allow-Origin': '*'
-  });
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('X-Accel-Buffering', 'no'); // Important for Nginx/Proxies
+  res.flushHeaders();
 
   res.write(`data: ${JSON.stringify({ agent: 'System', status: 'connected', message: 'Connected to workflow stream' })}\n\n`);
+
+  // Keep-alive heartbeat every 15s to prevent connection reset
+  const heartbeat = setInterval(() => {
+    res.write(':heartbeat\n\n');
+  }, 15000);
 
   orchestrator.registerSSEClient(req.params.id, res);
 
   req.on('close', () => {
+    clearInterval(heartbeat);
     orchestrator.removeSSEClient(req.params.id);
   });
 });
