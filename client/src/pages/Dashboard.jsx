@@ -123,14 +123,22 @@ function DocumentsTab({ documents }) {
 
   const renderTextWithLinks = (text) => {
     if (typeof text !== 'string') return text;
+    // Improved regex to handle trailing punctuation better
     const urlRegex = /(https?:\/\/[^\s)]+)/g;
     const parts = text.split(urlRegex);
     return parts.map((part, i) => {
       if (part.match(urlRegex)) {
+        // Clean trailing punctuation that might have been caught by the regex
+        const cleanUrl = part.replace(/[.,:;!]$/, '');
         return (
-          <a key={i} href={part} target="_blank" rel="noopener noreferrer" 
-             className="inline-flex items-center gap-1.5 mx-1 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-2.5 py-1 rounded-md text-xs font-bold transition-colors border border-indigo-200 shadow-sm">
-            Open Portal <ExternalLink size={12} />
+          <a key={i} 
+             href={cleanUrl} 
+             target="_blank" 
+             rel="noopener noreferrer" 
+             onClick={(e) => e.stopPropagation()}
+             className="inline-flex items-center gap-1.5 mx-1 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-lg text-[10px] font-bold transition-all shadow-md cursor-pointer relative z-50"
+          >
+            Open Portal <ExternalLink size={10} />
           </a>
         );
       }
@@ -170,7 +178,7 @@ function DocumentsTab({ documents }) {
                   {doc.likelyAvailable ? <FileCheck size={20} /> : <File size={20} />}
                 </div>
                 <div className="flex-1">
-                  <div className="text-sm font-bold text-gray-900">{doc.name}</div>
+                  <div className="text-sm font-bold text-gray-900">{renderTextWithLinks(doc.name)}</div>
                   <div className="text-xs text-gray-500 flex items-center gap-1 mt-1">
                     <Clock size={12} /> {doc.estimatedTime}
                   </div>
