@@ -1,5 +1,5 @@
 import { BaseAgent } from './BaseAgent.js';
-import { askGeminiJSON } from '../config/gemini.js';
+import { askGeminiJSON, isGeminiAvailable } from '../config/gemini.js';
 
 export class EligibilityValidationAgent extends BaseAgent {
   constructor() {
@@ -9,17 +9,18 @@ export class EligibilityValidationAgent extends BaseAgent {
   async run(input) {
     const { schemes, businessDetails, interviewAnswers } = input;
 
-    const schemeSummaries = schemes.map(s => ({
-      id: s.id,
-      name: s.name,
-      requirements: s.eligibility.requirements,
-      maxAge: s.eligibility.maxAgeYears,
-      maxRevenue: s.eligibility.maxRevenueLakhs,
-      businessTypes: s.eligibility.businessTypes,
-      states: s.eligibility.states
-    }));
+    if (isGeminiAvailable()) {
+      try {
+        const schemeSummaries = schemes.map(s => ({
+          id: s.id, name: s.name,
+          requirements: s.eligibility.requirements,
+          maxAge: s.eligibility.maxAgeYears,
+          maxRevenue: s.eligibility.maxRevenueLakhs,
+          businessTypes: s.eligibility.businessTypes,
+          states: s.eligibility.states
+        }));
 
-    const prompt = `You are an eligibility validation AI for Indian government funding schemes.
+        const prompt = `You are an eligibility validation AI for Indian government funding schemes.
 
 Business Details:
 ${JSON.stringify(businessDetails, null, 2)}
@@ -44,7 +45,58 @@ Return JSON array:
     "tip": "one helpful tip to improve eligibility"
   }
 ]`;
+        return await askGeminiJSON(prompt);
+      } catch (e) {
+        console.log('ValidationAgent falling back to rule-based validation');
+      }
+    }
 
-    return await askGeminiJSON(prompt);
+    // Rule-based fallback
+    return schemes.map(scheme => {
+      const reqs = scheme.eligibility.requirements;
+      const reasons = [];
+      const missing = [];
+      let score = 70;
+
+      // Check MSME registration
+      if (reqs.msmeRegistered) {
+        if (interviewAnswers.q1 === 'Yes') { reasons.push('Has Udyam/MSME Registration ✓'); score += 10; }
+        else { missing.push('Udyam Registration required'); score -= 15; }
+      }
+      // Check GST
+      if (reqs.gstRegistered) {
+        if (interviewAnswers.q2 === 'Yes') { reasons.push('Has GST Registration ✓'); score += 5; }
+        else { missing.push('GST Registration required'); score -= 10; }
+      }
+      // Check DPIIT
+      if (reqs.dpiitRecognized) {
+        if (interviewAnswers.q3 === 'Yes') { reasons.push('Has DPIIT Recognition ✓'); score += 10; }
+        else { missing.push('DPIIT Recognition required'); score -= 15; }
+      }
+      // Check women/SC-ST specific
+      if (reqs.womenOwned && interviewAnswers.q5 !== 'Yes') { missing.push('This scheme requires women ownership'); score -= 20; }
+      if (reqs.scStOwned && interviewAnswers.q7 !== 'Yes') { missing.push('This scheme requires SC/ST category'); score -= 20; }
+
+      // Age and revenue checks
+      if (scheme.eligibility.maxAgeYears > 0 && businessDetails.startupAge <= scheme.eligibility.maxAgeYears) {
+        reasons.push(`Business age (${businessDetails.startupAge}yr) within limit (${scheme.eligibility.maxAgeYears}yr) ✓`);
+      }
+      if (scheme.eligibility.states.includes(businessDetails.state) || scheme.eligibility.states.includes('All India')) {
+        reasons.push(`State ${businessDetails.state} eligible ✓`);
+      }
+
+      score = Math.max(10, Math.min(95, score));
+      const status = missing.length === 0 ? 'eligible' : missing.length <= 2 ? 'partially_eligible' : 'not_eligible';
+
+      return {
+        schemeId: scheme.id,
+        schemeName: scheme.name,
+        status,
+        confidence: score,
+        reasons: reasons.length ? reasons : ['Meets basic eligibility criteria'],
+        missingRequirements: missing,
+        tip: missing.length > 0 ? `Get ${missing[0]} to improve eligibility` : 'You meet all requirements — proceed with application!'
+      };
+    });
   }
 }

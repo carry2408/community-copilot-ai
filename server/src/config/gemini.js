@@ -3,14 +3,17 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 export const geminiModel = genAI.getGenerativeModel({ 
-  model: 'gemini-2.5-flash-preview-05-20',
+  model: 'gemini-2.0-flash',
   generationConfig: {
     temperature: 0.7,
     maxOutputTokens: 4096,
   }
 });
 
+let useGemini = true;
+
 export async function askGemini(prompt, options = {}) {
+  if (!useGemini) throw new Error('Gemini disabled — using fallbacks');
   try {
     const model = options.model ? genAI.getGenerativeModel({ model: options.model }) : geminiModel;
     const result = await model.generateContent(prompt);
@@ -18,6 +21,10 @@ export async function askGemini(prompt, options = {}) {
     return text;
   } catch (error) {
     console.error('Gemini API Error:', error.message);
+    if (error.message.includes('API_KEY_INVALID') || error.message.includes('API key not valid')) {
+      console.warn('⚠️ Gemini API key invalid — switching to fallback mode');
+      useGemini = false;
+    }
     throw error;
   }
 }
@@ -25,7 +32,9 @@ export async function askGemini(prompt, options = {}) {
 export async function askGeminiJSON(prompt) {
   const fullPrompt = prompt + '\n\nIMPORTANT: Respond ONLY with valid JSON. No markdown, no code blocks, no explanation.';
   const text = await askGemini(fullPrompt);
-  // Clean markdown code blocks if present
   const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
   return JSON.parse(cleaned);
 }
+
+export function isGeminiAvailable() { return useGemini; }
+export function resetGemini() { useGemini = true; }
