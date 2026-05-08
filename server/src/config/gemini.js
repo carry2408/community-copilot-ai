@@ -17,7 +17,7 @@ export async function askGemini(prompt, options = {}) {
   try {
     const client = getMainClient();
     const model = client.getGenerativeModel({
-      model: options.model || 'gemini-1.5-flash',
+      model: options.model || 'gemini-2.0-flash',
       generationConfig: { temperature: 0.7, maxOutputTokens: 4096 }
     });
     const result = await model.generateContent(prompt);
@@ -32,7 +32,7 @@ export async function askChatGemini(prompt) {
   try {
     const client = getChatClient();
     const model = client.getGenerativeModel({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.0-flash',
       generationConfig: { temperature: 0.8, maxOutputTokens: 2048 }
     });
     const result = await model.generateContent(prompt);
