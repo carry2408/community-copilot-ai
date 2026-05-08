@@ -1,11 +1,12 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// Models tried in order if one hits quota
+// Models tried in order if one hits quota — all are valid current models
 const MODEL_FALLBACKS = [
   'gemini-2.0-flash',
+  'gemini-2.0-flash-lite',
   'gemini-1.5-flash',
   'gemini-1.5-flash-8b',
-  'gemini-pro',
+  'gemini-1.5-pro',
 ];
 
 function getMainClient() {
