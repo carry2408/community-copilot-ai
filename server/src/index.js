@@ -5,6 +5,7 @@ import express from 'express';
 import cors from 'cors';
 import { workflowRouter } from './routes/workflow.js';
 import { schemesRouter } from './routes/schemes.js';
+import chatRouter from './routes/chat.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -18,6 +19,7 @@ app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Dat
 // Routes
 app.use('/api/workflow', workflowRouter);
 app.use('/api/schemes', schemesRouter);
+app.use('/api/chat', chatRouter);
 
 // Local dev server
 if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {

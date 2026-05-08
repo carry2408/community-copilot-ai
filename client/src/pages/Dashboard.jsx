@@ -10,7 +10,8 @@ import {
   FileText, CheckCircle, Files, Map as MapIcon,
   CheckCircle2, AlertCircle, XCircle, Lightbulb,
   AlertTriangle, FileCheck, File, Clock, Zap, Target,
-  RotateCcw, Download, Loader2, Bot, ChevronRight, ArrowRight, Info, Sparkles
+  RotateCcw, Download, Loader2, Bot, ChevronRight, ArrowRight, Info, Sparkles,
+  MessageSquare, Send, X
 } from 'lucide-react'
 
 function TabButton({ active, onClick, icon, children }) {
@@ -25,6 +26,8 @@ function TabButton({ active, onClick, icon, children }) {
 }
 
 function EligibilityTab({ results }) {
+  const [loadingLink, setLoadingLink] = useState(null)
+
   if (!results || !results.length) return (
     <div className="flex flex-col items-center justify-center py-20 text-center bg-gray-50/50 rounded-3xl border-2 border-dashed border-gray-200">
       <div className="w-16 h-16 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center mb-4">
@@ -34,6 +37,28 @@ function EligibilityTab({ results }) {
       <p className="text-sm text-gray-500 max-w-xs mt-1">Our AI is still searching for the best government schemes for your business.</p>
     </div>
   )
+
+  const handleSmartApply = async (schemeName, currentLink) => {
+    if (currentLink && !currentLink.includes('startupindia.gov.in') && currentLink !== '#') {
+      window.open(currentLink, '_blank')
+      return
+    }
+
+    setLoadingLink(schemeName)
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/chat/smart-link`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ schemeName })
+      })
+      const data = await res.json()
+      window.open(data.url || currentLink, '_blank')
+    } catch (err) {
+      window.open(currentLink, '_blank')
+    } finally {
+      setLoadingLink(null)
+    }
+  }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -48,8 +73,8 @@ function EligibilityTab({ results }) {
           <div className="p-6">
             <div className="flex justify-between items-start mb-4">
               <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${r.status === 'eligible' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
-                r.status === 'partially_eligible' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
-                  'bg-gray-50 text-gray-600 border border-gray-100'
+                  r.status === 'partially_eligible' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
+                    'bg-gray-50 text-gray-600 border border-gray-100'
                 }`}>
                 {r.status?.replace('_', ' ')}
               </div>
@@ -76,14 +101,17 @@ function EligibilityTab({ results }) {
             </div>
 
             <div className="pt-5 border-t border-gray-50 flex items-center gap-3">
-              <a
-                href={r.websiteUrl || r.applyLink || "https://www.startupindia.gov.in"}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-100"
+              <button
+                onClick={() => handleSmartApply(r.schemeName, r.websiteUrl || r.applyLink)}
+                disabled={loadingLink === r.schemeName}
+                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-100 disabled:opacity-70"
               >
-                Apply Now <ArrowRight size={14} />
-              </a>
+                {loadingLink === r.schemeName ? (
+                  <><Loader2 size={14} className="animate-spin" /> Finding Portal...</>
+                ) : (
+                  <>Apply Now <ArrowRight size={14} /></>
+                )}
+              </button>
               <button className="p-3 bg-gray-50 hover:bg-gray-100 text-gray-500 rounded-xl transition-all border border-gray-100">
                 <Info size={16} />
               </button>
@@ -221,12 +249,36 @@ function RoadmapTab({ roadmap }) {
 }
 
 function SummaryTab({ simplification, eligibilityResults }) {
+  const [loadingLink, setLoadingLink] = useState(null)
+
   if (!simplification) return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
       <Loader2 className="animate-spin text-indigo-500 mb-4" size={32} />
       <p className="text-gray-500 text-sm">Generating your professional report...</p>
     </div>
   )
+
+  const handleSmartApply = async (schemeName, currentLink) => {
+    if (currentLink && !currentLink.includes('startupindia.gov.in') && currentLink !== '#') {
+      window.open(currentLink, '_blank')
+      return
+    }
+
+    setLoadingLink(schemeName)
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/chat/smart-link`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ schemeName })
+      })
+      const data = await res.json()
+      window.open(data.url || currentLink, '_blank')
+    } catch (err) {
+      window.open(currentLink, '_blank')
+    } finally {
+      setLoadingLink(null)
+    }
+  }
 
   const points = simplification.points || []
   const hasPoints = points.length > 0
@@ -287,14 +339,17 @@ function SummaryTab({ simplification, eligibilityResults }) {
                   <span className="line-clamp-1">{point.action}</span>
                 </div>
 
-                <a
-                  href={point.link || "https://www.startupindia.gov.in"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
+                <button
+                  onClick={() => handleSmartApply(point.title, point.link)}
+                  disabled={loadingLink === point.title}
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-70"
                 >
-                  Apply Online <ArrowRight size={14} />
-                </a>
+                  {loadingLink === point.title ? (
+                    <><Loader2 size={14} className="animate-spin" /> Finding Portal...</>
+                  ) : (
+                    <><ArrowRight size={14} /> Apply Online</>
+                  )}
+                </button>
               </div>
             </motion.div>
           ))}
@@ -475,6 +530,113 @@ export default function Dashboard() {
 
         </div>
       </div>
+
+      {/* Floating Chatbot */}
+      <AIChatbot context={{ eligibilityResults, simplification }} />
+    </div>
+  )
+}
+
+function AIChatbot({ context }) {
+  const [isOpen, setIsOpen] = useState(false)
+  const [messages, setMessages] = useState([
+    { role: 'assistant', content: "Hi! I'm your Community Copilot AI. How can I help you with your funding results today?" }
+  ])
+  const [input, setInput] = useState('')
+  const [isTyping, setIsTyping] = useState(false)
+  const scrollRef = useRef()
+
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+  }, [messages])
+
+  const handleSend = async (e) => {
+    e.preventDefault()
+    if (!input.trim() || isTyping) return
+
+    const userMsg = input.trim()
+    setInput('')
+    setMessages(prev => [...prev, { role: 'user', content: userMsg }])
+    setIsTyping(true)
+
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userMsg, context })
+      })
+      const data = await res.json()
+      setMessages(prev => [...prev, { role: 'assistant', content: data.response }])
+    } catch (err) {
+      setMessages(prev => [...prev, { role: 'assistant', content: "I'm sorry, I'm having trouble connecting right now. Please try again later." }])
+    } finally {
+      setIsTyping(false)
+    }
+  }
+
+  return (
+    <div className="fixed bottom-6 right-6 z-50" data-html2canvas-ignore>
+      {isOpen ? (
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          className="bg-white w-[350px] sm:w-[400px] h-[500px] rounded-3xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden"
+        >
+          {/* Header */}
+          <div className="bg-indigo-600 p-4 flex justify-between items-center text-white">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                <Bot size={18} />
+              </div>
+              <span className="font-bold text-sm">AI Assistant</span>
+            </div>
+            <button onClick={() => setIsOpen(false)} className="hover:bg-white/10 p-1 rounded-lg transition-all">
+              <X size={20} />
+            </button>
+          </div>
+
+          {/* Messages */}
+          <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50">
+            {messages.map((m, i) => (
+              <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`max-w-[80%] p-3 rounded-2xl text-sm ${
+                  m.role === 'user' ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-white border border-gray-100 text-gray-700 rounded-tl-none shadow-sm'
+                }`}>
+                  {m.content}
+                </div>
+              </div>
+            ))}
+            {isTyping && (
+              <div className="flex justify-start">
+                <div className="bg-white border border-gray-100 p-3 rounded-2xl rounded-tl-none shadow-sm">
+                  <Loader2 size={16} className="animate-spin text-indigo-500" />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Input */}
+          <form onSubmit={handleSend} className="p-4 bg-white border-t border-gray-100 flex gap-2">
+            <input 
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Ask anything..."
+              className="flex-1 bg-gray-50 border-none rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
+            />
+            <button type="submit" disabled={!input.trim() || isTyping} className="p-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all disabled:opacity-50">
+              <Send size={18} />
+            </button>
+          </form>
+        </motion.div>
+      ) : (
+        <button 
+          onClick={() => setIsOpen(true)}
+          className="w-16 h-16 bg-indigo-600 text-white rounded-full shadow-xl flex items-center justify-center hover:scale-110 transition-all group relative"
+        >
+          <MessageSquare size={28} />
+          <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full"></div>
+        </button>
+      )}
     </div>
   )
 }
