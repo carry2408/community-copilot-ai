@@ -26,59 +26,73 @@ function TabButton({ active, onClick, icon, children }) {
 }
 
 function EligibilityTab({ results }) {
-  if (!results || !results.length) return <p className="text-gray-500 text-sm">No eligibility results yet.</p>
-
-  const statusConfig = {
-    eligible: { color: 'text-emerald-600', bg: 'bg-emerald-50', icon: <CheckCircle2 size={16} />, label: 'Eligible' },
-    partially_eligible: { color: 'text-amber-600', bg: 'bg-amber-50', icon: <AlertCircle size={16} />, label: 'Partially Eligible' },
-    not_eligible: { color: 'text-red-600', bg: 'bg-red-50', icon: <XCircle size={16} />, label: 'Not Eligible' }
-  }
+  if (!results || !results.length) return (
+    <div className="flex flex-col items-center justify-center py-20 text-center bg-gray-50/50 rounded-3xl border-2 border-dashed border-gray-200">
+      <div className="w-16 h-16 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center mb-4">
+        <Target size={32} />
+      </div>
+      <h3 className="text-lg font-semibold text-gray-900">No matches found yet</h3>
+      <p className="text-sm text-gray-500 max-w-xs mt-1">Our AI is still searching for the best government schemes for your business.</p>
+    </div>
+  )
 
   return (
-    <div className="space-y-4">
-      {results.map((r, i) => {
-        const conf = statusConfig[r.status] || statusConfig.not_eligible;
-        return (
-          <motion.div key={r.schemeId || i}
-            initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
-            className="glass-card p-6 bg-white shadow-sm border border-gray-200">
-            <div className="flex items-start justify-between mb-4">
-              <h4 className="text-base font-bold text-gray-900">{r.schemeName}</h4>
-              <span className={`text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1.5 ${conf.bg} ${conf.color}`}>
-                {conf.icon}
-                {conf.label}
-              </span>
-            </div>
-            
-            {r.confidence && (
-              <div className="mb-5">
-                <div className="flex justify-between text-xs mb-1.5 font-medium">
-                  <span className="text-gray-500">Confidence Score</span>
-                  <span className={conf.color}>{r.confidence}%</span>
-                </div>
-                <div className="w-full h-1.5 rounded-full bg-gray-100 overflow-hidden">
-                  <div className={`h-full transition-all ${conf.bg.replace('bg-', 'bg-').replace('50', '500')}`} style={{ width: `${r.confidence}%` }} />
-                </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {results.map((r, i) => (
+        <motion.div 
+          key={r.schemeId || i}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: i * 0.1 }}
+          className="bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-indigo-100 transition-all duration-500 overflow-hidden group"
+        >
+          <div className="p-6">
+            <div className="flex justify-between items-start mb-4">
+              <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                r.status === 'eligible' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 
+                r.status === 'partially_eligible' ? 'bg-amber-50 text-amber-600 border border-amber-100' : 
+                'bg-gray-50 text-gray-600 border border-gray-100'
+              }`}>
+                {r.status?.replace('_', ' ')}
               </div>
-            )}
-            
-            <div className="space-y-2">
-              {(r.reasons || []).map((reason, j) => (
-                <p key={j} className="text-sm flex items-start gap-2 text-gray-600 leading-relaxed">
-                  <span className="text-gray-400 mt-1">•</span> {reason}
-                </p>
-              ))}
-            </div>
-            
-            {r.tip && (
-              <div className="mt-5 p-3 rounded-lg text-sm bg-indigo-50 text-indigo-700 flex items-start gap-2 border border-indigo-100">
-                <Lightbulb size={18} className="shrink-0 mt-0.5" />
-                <span>{r.tip}</span>
+              <div className="flex items-center gap-1 text-indigo-600 font-bold text-lg">
+                {r.confidence || 85}% <span className="text-[10px] text-gray-400 font-medium uppercase tracking-tight ml-1">Match</span>
               </div>
-            )}
-          </motion.div>
-        )
-      })}
+            </div>
+
+            <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-indigo-600 transition-colors line-clamp-2 min-h-[3.5rem]">
+              {r.schemeName}
+            </h3>
+
+            <div className="space-y-3 mb-6">
+              <div className="flex items-start gap-2">
+                <CheckCircle2 size={16} className="text-emerald-500 shrink-0 mt-0.5" />
+                <div className="text-xs text-gray-600 line-clamp-2">{r.reasons && r.reasons[0]}</div>
+              </div>
+              {r.missingRequirements?.length > 0 && (
+                <div className="flex items-start gap-2">
+                  <AlertTriangle size={16} className="text-amber-500 shrink-0 mt-0.5" />
+                  <div className="text-xs text-amber-700 font-medium line-clamp-1">Needs: {r.missingRequirements[0]}</div>
+                </div>
+              )}
+            </div>
+
+            <div className="pt-5 border-t border-gray-50 flex items-center gap-3">
+              <a 
+                href={r.applyLink || "#"} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-100"
+              >
+                Apply Now <ArrowRight size={14} />
+              </a>
+              <button className="p-3 bg-gray-50 hover:bg-gray-100 text-gray-500 rounded-xl transition-all border border-gray-100">
+                <Info size={16} />
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      ))}
     </div>
   )
 }
@@ -209,26 +223,58 @@ function RoadmapTab({ roadmap }) {
   )
 }
 
-function SummaryTab({ simplification }) {
-  if (!simplification) return <p className="text-gray-500 text-sm">No summary yet.</p>
+function SummaryTab({ simplification, eligibilityResults }) {
+  if (!simplification) return (
+    <div className="flex flex-col items-center justify-center py-20 text-center">
+      <Loader2 className="animate-spin text-indigo-500 mb-4" size={32} />
+      <p className="text-gray-500 text-sm">Generating your AI executive summary...</p>
+    </div>
+  )
+
+  const topMatches = (eligibilityResults || []).filter(r => r.status === 'eligible' || r.status === 'partially_eligible').slice(0, 2)
+
   return (
-    <div className="glass-card p-8 bg-white shadow-sm border border-gray-200">
-      <h4 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
-        <Bot className="text-indigo-600" /> AI Executive Summary
-      </h4>
-      <div className="text-sm leading-relaxed text-gray-600 whitespace-pre-wrap font-medium">
-        {simplification.summary}
-      </div>
-      <div className="flex gap-8 mt-8 pt-6 border-t border-gray-100">
-        <div>
-          <div className="text-2xl font-extrabold text-emerald-600">{simplification.eligibleCount}</div>
-          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mt-1">Eligible Schemes</div>
+    <div className="space-y-8">
+      {/* AI Summary Card */}
+      <div className="bg-indigo-900 rounded-[2.5rem] p-8 lg:p-10 text-white shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-20 -mt-20 blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-indigo-500/20 rounded-full -ml-10 -mb-10 blur-3xl"></div>
+        
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20 shadow-inner">
+              <Bot size={24} className="text-indigo-200" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold">AI Executive Summary</h2>
+              <div className="text-xs text-indigo-300 font-medium flex items-center gap-1.5 mt-0.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></div> 
+                Updated just now
+              </div>
+            </div>
+          </div>
+
+          <div className="text-base lg:text-lg leading-relaxed text-indigo-50/90 whitespace-pre-wrap font-medium max-w-3xl">
+            {simplification.summary}
+          </div>
         </div>
-        <div>
-          <div className="text-2xl font-extrabold text-gray-900">{simplification.totalChecked}</div>
-          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mt-1">Total Checked</div>
-        </div>
       </div>
+
+      {/* Featured Matches */}
+      {topMatches.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex justify-between items-end">
+            <div>
+              <h3 className="text-lg font-bold text-gray-900">Recommended for You</h3>
+              <p className="text-sm text-gray-500">The best matching schemes based on your profile.</p>
+            </div>
+            <button className="text-sm font-bold text-indigo-600 flex items-center gap-1 hover:gap-2 transition-all">
+              View all results <ChevronRight size={16} />
+            </button>
+          </div>
+          <EligibilityTab results={topMatches} />
+        </div>
+      )}
     </div>
   )
 }
@@ -384,7 +430,7 @@ export default function Dashboard() {
               )}
 
               <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                {activeTab === 'summary' && <SummaryTab simplification={simplification} />}
+                {activeTab === 'summary' && <SummaryTab simplification={simplification} eligibilityResults={eligibilityResults} />}
                 {activeTab === 'eligibility' && <EligibilityTab results={eligibilityResults} />}
                 {activeTab === 'documents' && <DocumentsTab documents={documents} />}
                 {activeTab === 'roadmap' && <RoadmapTab roadmap={roadmap} />}
