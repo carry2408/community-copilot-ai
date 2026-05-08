@@ -8,20 +8,21 @@ router.post('/', async (req, res) => {
   const { message, context } = req.body;
 
   try {
-    // Only send essential context to save tokens and prevent 500 errors
-    const simplifiedContext = {
-      eligibleSchemes: context?.eligibilityResults
-        ?.filter(r => r.status === 'eligible' || r.status === 'partially_eligible')
-        .map(r => `${r.schemeName} (${r.status})`) || [],
-      summary: context?.simplification?.intro || ''
-    };
+    console.log('AI Chat Request received');
+
+    // Safe Context Filtering
+    const eligibleSchemes = Array.isArray(context?.eligibilityResults) 
+      ? context.eligibilityResults
+          .filter(r => r.status === 'eligible' || r.status === 'partially_eligible')
+          .map(r => r.schemeName)
+      : [];
 
     const prompt = `You are the Community Copilot AI Assistant. 
 You are helping a business owner with their government scheme eligibility results.
 
 BUSINESS CONTEXT:
-Eligible Schemes: ${simplifiedContext.eligibleSchemes.join(', ')}
-Summary: ${simplifiedContext.summary}
+Eligible Schemes: ${eligibleSchemes.join(', ') || 'None found yet'}
+Summary: ${context?.simplification?.intro || 'New analysis needed'}
 
 USER QUESTION:
 ${message}
@@ -31,8 +32,8 @@ Provide a professional, helpful, and concise response. If they ask about applyin
     const response = await askGemini(prompt);
     res.json({ response });
   } catch (error) {
-    console.error('Chat error:', error);
-    res.status(500).json({ error: error.message || 'Failed to get AI response' });
+    console.error('Chat AI Error:', error.message);
+    res.status(500).json({ error: error.message || 'Internal AI Error' });
   }
 });
 
@@ -41,17 +42,15 @@ router.post('/smart-link', async (req, res) => {
   const { schemeName } = req.body;
 
   try {
-    const prompt = `Search your knowledge for the EXACT official application portal URL for the government scheme: "${schemeName}".
-    
-Respond ONLY with the URL. If you are not 100% sure, provide the most relevant state or central government portal where the application likely resides (e.g. startupindia.gov.in or a state DIC portal).
-DO NOT include any text other than the URL. No markdown.`;
+    const prompt = `Find the EXACT official application portal URL for: "${schemeName}".
+Respond ONLY with the URL. No markdown. No text.`;
 
     const response = await askGemini(prompt);
     const url = response.trim().match(/https?:\/\/[^\s]+/)?.[0] || response.trim();
     res.json({ url });
   } catch (error) {
-    console.error('Smart link error:', error);
-    res.status(500).json({ error: 'Failed to find smart link' });
+    console.error('Smart Link Error:', error.message);
+    res.status(500).json({ error: 'Failed to find portal' });
   }
 });
 
