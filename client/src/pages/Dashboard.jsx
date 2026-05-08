@@ -1,8 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useWorkflowStore } from '../store/workflowStore'
-
+import { useAuth } from '../contexts/AuthContext'
+import { saveUserResults, getUserResults } from '../services/db'
+import html2canvas from 'html2canvas'
+import jsPDF from 'jspdf'
 function TabButton({ active, onClick, children }) {
   return (
     <button onClick={onClick}
@@ -202,8 +205,57 @@ function SummaryTab({ simplification }) {
 
 export default function Dashboard() {
   const navigate = useNavigate()
-  const { status, eligibilityResults, simplification, documents, roadmap, schemes } = useWorkflowStore()
+  const { status, eligibilityResults, simplification, documents, roadmap, setResults } = useWorkflowStore()
+  const { currentUser } = useAuth()
   const [activeTab, setActiveTab] = useState('summary')
+  const [isExporting, setIsExporting] = useState(false)
+  const [isLoadingDB, setIsLoadingDB] = useState(true)
+  const contentRef = useRef()
+
+  // Load from DB or Save to DB
+  useEffect(() => {
+    const handleDB = async () => {
+      if (!currentUser) {
+        setIsLoadingDB(false)
+        return
+      }
+
+      if (status === 'completed') {
+        // We just finished a workflow, save it!
+        await saveUserResults(currentUser.uid, { eligibilityResults, simplification, documents, roadmap })
+        setIsLoadingDB(false)
+      } else {
+        // We arrived here empty, try to fetch from DB
+        const savedData = await getUserResults(currentUser.uid)
+        if (savedData) {
+          setResults(savedData)
+        }
+        setIsLoadingDB(false)
+      }
+    }
+    handleDB()
+  }, [currentUser, status, eligibilityResults, simplification, documents, roadmap, setResults])
+
+  const exportPDF = async () => {
+    if (!contentRef.current) return
+    setIsExporting(true)
+    try {
+      const canvas = await html2canvas(contentRef.current, { scale: 2, backgroundColor: '#0a0a0f' })
+      const imgData = canvas.toDataURL('image/png')
+      const pdf = new jsPDF('p', 'mm', 'a4')
+      const pdfWidth = pdf.internal.pageSize.getWidth()
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight)
+      pdf.save('Community-Copilot-Plan.pdf')
+    } catch (err) {
+      console.error("Failed to export PDF", err)
+    }
+    setIsExporting(false)
+  }
+
+  if (isLoadingDB) {
+    return <div className="min-h-screen pt-24 text-center" style={{ color: 'var(--text-secondary)' }}>Loading your dashboard...</div>
+  }
 
   if (status !== 'completed') {
     return (
@@ -228,38 +280,45 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen pt-24 pb-12 px-6">
       <div className="max-w-4xl mx-auto">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
-            🎯 Your Funding Dashboard
-          </h1>
-          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-            AI analysis complete — {eligibilityResults?.filter(r => r.status === 'eligible').length || 0} schemes found eligible
-          </p>
-        </motion.div>
+        <div ref={contentRef} className="p-4 -m-4 rounded-xl" style={{ background: isExporting ? 'var(--bg-primary)' : 'transparent' }}>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+            <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
+              🎯 Your Funding Dashboard
+            </h1>
+            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+              AI analysis complete — {eligibilityResults?.filter(r => r.status === 'eligible').length || 0} schemes found eligible
+            </p>
+          </motion.div>
 
-        {/* Tabs */}
-        <div className="flex gap-2 mb-6 flex-wrap">
-          {tabs.map(t => (
-            <TabButton key={t.id} active={activeTab === t.id} onClick={() => setActiveTab(t.id)}>
-              {t.label}
-            </TabButton>
-          ))}
+          {/* Tabs */}
+          <div className="flex gap-2 mb-6 flex-wrap" data-html2canvas-ignore={isExporting}>
+            {tabs.map(t => (
+              <TabButton key={t.id} active={activeTab === t.id} onClick={() => setActiveTab(t.id)}>
+                {t.label}
+              </TabButton>
+            ))}
+          </div>
+
+          {/* Tab Content */}
+          <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+            {activeTab === 'summary' && <SummaryTab simplification={simplification} />}
+            {activeTab === 'eligibility' && <EligibilityTab results={eligibilityResults} />}
+            {activeTab === 'documents' && <DocumentsTab documents={documents} />}
+            {activeTab === 'roadmap' && <RoadmapTab roadmap={roadmap} />}
+          </motion.div>
         </div>
-
-        {/* Tab Content */}
-        <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-          {activeTab === 'summary' && <SummaryTab simplification={simplification} />}
-          {activeTab === 'eligibility' && <EligibilityTab results={eligibilityResults} />}
-          {activeTab === 'documents' && <DocumentsTab documents={documents} />}
-          {activeTab === 'roadmap' && <RoadmapTab roadmap={roadmap} />}
-        </motion.div>
 
         {/* Action bar */}
         <div className="mt-8 flex gap-4">
           <button onClick={() => { useWorkflowStore.getState().reset(); navigate('/onboarding') }}
-            className="px-6 py-3 rounded-xl text-sm font-medium"
+            className="px-6 py-3 rounded-xl text-sm font-medium transition-colors hover:bg-[rgba(255,255,255,0.1)]"
             style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-subtle)', color: 'var(--text-secondary)' }}>
             🔄 New Analysis
+          </button>
+          
+          <button onClick={exportPDF} disabled={isExporting}
+            className="glow-btn px-6 py-3 rounded-xl text-sm font-medium flex items-center gap-2">
+            {isExporting ? '⏳ Exporting...' : '📄 Download PDF'}
           </button>
         </div>
       </div>

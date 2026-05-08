@@ -4,6 +4,7 @@ import Onboarding from './pages/Onboarding'
 import Workflow from './pages/Workflow'
 import Dashboard from './pages/Dashboard'
 import Navbar from './components/layout/Navbar'
+import ProtectedRoute from './components/layout/ProtectedRoute'
 import { AuthProvider } from './contexts/AuthContext'
 
 export default function App() {
@@ -14,8 +15,22 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/onboarding" element={<Onboarding />} />
-          <Route path="/workflow" element={<Workflow />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route 
+            path="/workflow" 
+            element={
+              <ProtectedRoute>
+                <Workflow />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/dashboard" 
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } 
+          />
         </Routes>
       </div>
     </AuthProvider>
