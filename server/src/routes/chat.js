@@ -57,8 +57,23 @@ const STATE_SCHEMES = [
   },
   {
     "state": "Karnataka",
+    "scheme": "beyond bengaluru seed fund",
+    "officialLink": "https://eitbt.karnataka.gov.in/startup/public/50/beyond-bengaluru-cluster-seed-fund/en"
+  },
+  {
+    "state": "Karnataka",
+    "scheme": "Prime Minister's Employment Generation Programme (PMEGP)",
+    "officialLink": "https://www.slbctn.com/Pradhan_Mantri_Employment_Generation_Programme.aspx"
+  },
+  {
+    "state": "Karnataka",
     "scheme": "Elevate Karnataka",
     "officialLink": "https://www.missionstartupkarnataka.org/elevate-karnataka"
+  },
+  {
+    "state": "Karnataka",
+    "scheme": "Credit Linked Capital Subsidy Scheme (CLCSS)nataka",
+    "officialLink": "https://msme.gov.in/sites/default/files/CreditLinkCapitalSubsidyScheme.pdf"
   },
   {
     "state": "Maharashtra",

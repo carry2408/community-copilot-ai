@@ -11,7 +11,7 @@ import {
   CheckCircle2, AlertCircle, XCircle, Lightbulb,
   AlertTriangle, FileCheck, File, Clock, Zap, Target,
   RotateCcw, Download, Loader2, Bot, ChevronRight, ArrowRight, Info, Sparkles,
-  MessageSquare, Send, X
+  MessageSquare, Send, X, ExternalLink
 } from 'lucide-react'
 
 function TabButton({ active, onClick, icon, children }) {
@@ -121,6 +121,23 @@ function EligibilityTab({ results }) {
 function DocumentsTab({ documents }) {
   if (!documents) return <p className="text-gray-500 text-sm">No document data yet.</p>
 
+  const renderTextWithLinks = (text) => {
+    if (typeof text !== 'string') return text;
+    const urlRegex = /(https?:\/\/[^\s)]+)/g;
+    const parts = text.split(urlRegex);
+    return parts.map((part, i) => {
+      if (part.match(urlRegex)) {
+        return (
+          <a key={i} href={part} target="_blank" rel="noopener noreferrer" 
+             className="inline-flex items-center gap-1.5 mx-1 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-2.5 py-1 rounded-md text-xs font-bold transition-colors border border-indigo-200 shadow-sm">
+            Open Portal <ExternalLink size={12} />
+          </a>
+        );
+      }
+      return <span key={i}>{part}</span>;
+    });
+  };
+
   return (
     <div className="space-y-8">
       {/* Missing alerts */}
@@ -133,9 +150,9 @@ function DocumentsTab({ documents }) {
             <div key={i} className="glass-card p-5 bg-red-50 border border-red-100 rounded-lg">
               <div className="text-sm font-bold text-red-900">{alert.document}</div>
               <p className="text-sm mt-1 text-red-700">{alert.impact}</p>
-              <div className="mt-3 flex items-start gap-2 text-sm text-red-600 bg-white p-2.5 rounded border border-red-50">
-                <Target size={16} className="shrink-0 mt-0.5" />
-                <span>{alert.howToGet}</span>
+              <div className="mt-3 flex items-start gap-2 text-sm text-red-600 bg-white p-2.5 rounded border border-red-50 leading-relaxed">
+                <Target size={16} className="shrink-0 mt-1" />
+                <div>{renderTextWithLinks(alert.howToGet)}</div>
               </div>
             </div>
           ))}
