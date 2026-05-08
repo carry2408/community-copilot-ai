@@ -30,20 +30,20 @@ Format your response as a JSON object with:
 
 Respond ONLY with JSON.`;
         const result = await askGeminiJSON(prompt);
-        
+
         // Attach links to points
         const pointsWithLinks = result.points.map(p => {
           const original = eligible.find(e => e.schemeName.toLowerCase().includes(p.title.toLowerCase()) || p.title.toLowerCase().includes(e.schemeName.toLowerCase()));
           return { ...p, link: original?.websiteUrl || original?.applyLink || "https://www.startupindia.gov.in" };
         });
 
-        return { 
+        return {
           structured: true,
           intro: result.intro,
           points: pointsWithLinks,
           outro: result.outro,
-          eligibleCount: eligible.length, 
-          totalChecked: eligibilityResults.length 
+          eligibleCount: eligible.length,
+          totalChecked: eligibilityResults.length
         };
       } catch (e) {
         console.log('SimplificationAgent fallback');

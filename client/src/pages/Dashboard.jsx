@@ -48,8 +48,8 @@ function EligibilityTab({ results }) {
           <div className="p-6">
             <div className="flex justify-between items-start mb-4">
               <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${r.status === 'eligible' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
-                  r.status === 'partially_eligible' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
-                    'bg-gray-50 text-gray-600 border border-gray-100'
+                r.status === 'partially_eligible' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
+                  'bg-gray-50 text-gray-600 border border-gray-100'
                 }`}>
                 {r.status?.replace('_', ' ')}
               </div>
@@ -229,6 +229,8 @@ function SummaryTab({ simplification, eligibilityResults }) {
   )
 
   const points = simplification.points || []
+  const hasPoints = points.length > 0
+  const oldSummary = simplification.summary || (typeof simplification === 'string' ? simplification : null)
 
   return (
     <div className="space-y-8">
@@ -237,58 +239,68 @@ function SummaryTab({ simplification, eligibilityResults }) {
         <h2 className="text-2xl font-bold text-gray-900 mb-3 flex items-center gap-2">
           <Bot className="text-indigo-600" /> Executive Summary
         </h2>
-        <p className="text-gray-600 leading-relaxed font-medium">
-          {simplification.intro}
-        </p>
+        {(simplification.intro || (!hasPoints && oldSummary)) && (
+          <p className="text-gray-600 leading-relaxed font-medium whitespace-pre-wrap">
+            {simplification.intro || oldSummary}
+          </p>
+        )}
       </div>
 
       {/* Structured Points as Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {points.map((point, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
-            className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-indigo-100 transition-all group"
-          >
-            <div className="flex justify-between items-start mb-4">
-              <h3 className="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors line-clamp-2 min-h-[3.5rem]">
-                {point.title}
-              </h3>
-              <div className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${point.status?.includes('Fully') ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-amber-50 text-amber-600 border border-amber-100'
-                }`}>
-                {point.status}
-              </div>
-            </div>
-
-            <p className="text-sm text-gray-600 mb-6 font-medium leading-relaxed line-clamp-3">
-              {point.details}
-            </p>
-
-            <div className="space-y-4 pt-4 border-t border-gray-50">
-              <div className="flex items-center gap-2 text-xs font-bold p-2 bg-gray-50 rounded-lg text-gray-700">
-                <Sparkles size={14} className="text-indigo-500 shrink-0" />
-                <span className="line-clamp-1">{point.action}</span>
+      {hasPoints ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {points.map((point, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1 }}
+              className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-indigo-100 transition-all group"
+            >
+              <div className="flex justify-between items-start mb-4">
+                <h3 className="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors line-clamp-2 min-h-[3.5rem]">
+                  {point.title}
+                </h3>
+                <div className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${point.status?.includes('Fully') ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-amber-50 text-amber-600 border border-amber-100'
+                  }`}>
+                  {point.status}
+                </div>
               </div>
 
-              <a
-                href={point.link || "https://www.startupindia.gov.in"}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
-              >
-                Apply Online <ArrowRight size={14} />
-              </a>
-            </div>
-          </motion.div>
-        ))}
-      </div>
+              <p className="text-sm text-gray-600 mb-6 font-medium leading-relaxed line-clamp-3">
+                {point.details}
+              </p>
+
+              <div className="space-y-4 pt-4 border-t border-gray-50">
+                <div className="flex items-center gap-2 text-xs font-bold p-2 bg-gray-50 rounded-lg text-gray-700">
+                  <Sparkles size={14} className="text-indigo-500 shrink-0" />
+                  <span className="line-clamp-1">{point.action}</span>
+                </div>
+
+                <a
+                  href={point.link || "https://www.startupindia.gov.in"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
+                >
+                  Apply Online <ArrowRight size={14} />
+                </a>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      ) : !oldSummary ? (
+        <div className="p-12 text-center bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
+          <p className="text-gray-500 font-medium">Click "New Analysis" to generate a professional card-based report.</p>
+        </div>
+      ) : null}
 
       {/* Outro */}
-      <div className="p-6 bg-gray-900 rounded-2xl border border-gray-800 text-white font-bold text-center shadow-lg">
-        {simplification.outro}
-      </div>
+      {(simplification.outro || (!hasPoints && oldSummary)) && (
+        <div className="p-6 bg-gray-900 rounded-2xl border border-gray-800 text-white font-bold text-center shadow-lg">
+          {simplification.outro || "Next Step: Review your document checklist and start your application today."}
+        </div>
+      )}
     </div>
   )
 }
