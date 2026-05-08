@@ -1,35 +1,25 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// Clean the keys to remove hidden spaces/newlines
-const mainKey = (process.env.GEMINI_API_KEY || '').trim();
-const chatKey = (process.env.CHAT_GEMINI_API_KEY || '').trim() || mainKey;
-
-if (!mainKey) {
-  console.error('❌ CRITICAL: GEMINI_API_KEY is missing!');
-} else {
-  console.log(`✅ Main Key: [${mainKey.substring(0, 4)}...${mainKey.substring(mainKey.length - 4)}] (Length: ${mainKey.length})`);
+// Lazy initialization — keys are read AFTER dotenv has loaded them
+function getMainClient() {
+  const key = (process.env.GEMINI_API_KEY || '').trim();
+  if (!key) throw new Error('GEMINI_API_KEY is not set in .env');
+  return new GoogleGenerativeAI(key);
 }
 
-if (process.env.CHAT_GEMINI_API_KEY) {
-  console.log(`✅ Chat Key: [${chatKey.substring(0, 4)}...${chatKey.substring(chatKey.length - 4)}] (Length: ${chatKey.length})`);
+function getChatClient() {
+  const key = (process.env.CHAT_GEMINI_API_KEY || process.env.GEMINI_API_KEY || '').trim();
+  if (!key) throw new Error('CHAT_GEMINI_API_KEY is not set in .env');
+  return new GoogleGenerativeAI(key);
 }
-
-const genAI = new GoogleGenerativeAI(mainKey || 'MISSING_KEY');
-const chatGenAI = new GoogleGenerativeAI(chatKey || mainKey || 'MISSING_KEY');
-
-export const geminiModel = genAI.getGenerativeModel({ 
-  model: 'gemini-1.5-flash',
-  generationConfig: { temperature: 0.7, maxOutputTokens: 4096 }
-});
-
-export const chatModel = chatGenAI.getGenerativeModel({
-  model: 'gemini-1.5-flash',
-  generationConfig: { temperature: 0.8, maxOutputTokens: 2048 }
-});
 
 export async function askGemini(prompt, options = {}) {
   try {
-    const model = options.model ? genAI.getGenerativeModel({ model: options.model }) : geminiModel;
+    const client = getMainClient();
+    const model = client.getGenerativeModel({
+      model: options.model || 'gemini-1.5-flash',
+      generationConfig: { temperature: 0.7, maxOutputTokens: 4096 }
+    });
     const result = await model.generateContent(prompt);
     return result.response.text();
   } catch (error) {
@@ -40,7 +30,12 @@ export async function askGemini(prompt, options = {}) {
 
 export async function askChatGemini(prompt) {
   try {
-    const result = await chatModel.generateContent(prompt);
+    const client = getChatClient();
+    const model = client.getGenerativeModel({
+      model: 'gemini-1.5-flash',
+      generationConfig: { temperature: 0.8, maxOutputTokens: 2048 }
+    });
+    const result = await model.generateContent(prompt);
     return result.response.text();
   } catch (error) {
     console.error('Chat Gemini Error:', error.message);
