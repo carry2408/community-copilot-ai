@@ -1,8 +1,14 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+if (!process.env.GEMINI_API_KEY) {
+  console.error('❌ CRITICAL: GEMINI_API_KEY is missing from .env file!');
+} else {
+  console.log(`✅ Gemini API Key detected (starts with: ${process.env.GEMINI_API_KEY.substring(0, 6)}...)`);
+}
 
-export const geminiModel = genAI.getGenerativeModel({ 
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'MISSING_KEY');
+
+export const geminiModel = genAI.getGenerativeModel({
   model: 'gemini-1.5-flash',
   generationConfig: {
     temperature: 0.7,
