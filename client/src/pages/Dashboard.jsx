@@ -446,15 +446,41 @@ export default function Dashboard() {
     if (!contentRef.current) return
     setIsExporting(true)
     try {
-      const canvas = await html2canvas(contentRef.current, { scale: 2, backgroundColor: '#f9fafb' })
+      // Small delay to ensure any layout shifts settle
+      await new Promise(r => setTimeout(r, 500))
+      
+      const canvas = await html2canvas(contentRef.current, { 
+        scale: 2, 
+        backgroundColor: '#f9fafb',
+        useCORS: true,
+        logging: false,
+        windowWidth: 1200 // Ensure consistent width for capture
+      })
+      
       const imgData = canvas.toDataURL('image/png')
       const pdf = new jsPDF('p', 'mm', 'a4')
       const pdfWidth = pdf.internal.pageSize.getWidth()
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight)
-      pdf.save('Community-Copilot-Plan.pdf')
+      
+      // If content is very long, add pages
+      const pageHeight = pdf.internal.pageSize.getHeight()
+      let heightLeft = pdfHeight
+      let position = 0
+
+      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight)
+      heightLeft -= pageHeight
+
+      while (heightLeft >= 0) {
+        position = heightLeft - pdfHeight
+        pdf.addPage()
+        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight)
+        heightLeft -= pageHeight
+      }
+
+      pdf.save(`Community-Copilot-Report-${currentUser.displayName || 'Business'}.pdf`)
     } catch (err) {
-      console.error("Failed to export PDF", err)
+      console.error("Failed to export PDF:", err)
+      alert("PDF Export failed. Please try again.")
     }
     setIsExporting(false)
   }
@@ -543,12 +569,33 @@ export default function Dashboard() {
                 </div>
               )}
 
-              <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                {activeTab === 'summary' && <SummaryTab simplification={simplification} eligibilityResults={eligibilityResults} />}
-                {activeTab === 'eligibility' && <EligibilityTab results={eligibilityResults} />}
-                {activeTab === 'documents' && <DocumentsTab documents={documents} />}
-                {activeTab === 'roadmap' && <RoadmapTab roadmap={roadmap} />}
-              </motion.div>
+              {isExporting ? (
+                <div className="space-y-20">
+                  <div>
+                    <h2 className="text-2xl font-bold text-indigo-600 mb-8 uppercase tracking-widest border-l-4 border-indigo-600 pl-4">I. Executive Summary</h2>
+                    <SummaryTab simplification={simplification} eligibilityResults={eligibilityResults} />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-indigo-600 mb-8 uppercase tracking-widest border-l-4 border-indigo-600 pl-4">II. Scheme Eligibility</h2>
+                    <EligibilityTab results={eligibilityResults} />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-indigo-600 mb-8 uppercase tracking-widest border-l-4 border-indigo-600 pl-4">III. Required Documents</h2>
+                    <DocumentsTab documents={documents} />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-indigo-600 mb-8 uppercase tracking-widest border-l-4 border-indigo-600 pl-4">IV. Implementation Roadmap</h2>
+                    <RoadmapTab roadmap={roadmap} />
+                  </div>
+                </div>
+              ) : (
+                <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                  {activeTab === 'summary' && <SummaryTab simplification={simplification} eligibilityResults={eligibilityResults} />}
+                  {activeTab === 'eligibility' && <EligibilityTab results={eligibilityResults} />}
+                  {activeTab === 'documents' && <DocumentsTab documents={documents} />}
+                  {activeTab === 'roadmap' && <RoadmapTab roadmap={roadmap} />}
+                </motion.div>
+              )}
             </div>
           </div>
 
