@@ -8,9 +8,9 @@ export default function ProtectedRoute({ children }) {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center pt-16">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-8 h-8 rounded-full border-2 border-[var(--accent-indigo)] border-t-transparent animate-spin"></div>
-          <p className="text-[var(--text-secondary)] text-sm">Authenticating...</p>
+        <div className="flex flex-col items-center gap-4 text-gray-500">
+          <div className="w-8 h-8 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin"></div>
+          <p className="text-sm font-medium">Authenticating...</p>
         </div>
       </div>
     );

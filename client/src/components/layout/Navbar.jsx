@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '../../contexts/AuthContext'
 import { signInWithGoogle, logOut } from '../../config/firebase'
+import { Hexagon, LogOut } from 'lucide-react'
 
 export default function Navbar() {
   const location = useLocation()
@@ -26,31 +27,24 @@ export default function Navbar() {
     <motion.nav
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      className="fixed top-0 left-0 right-0 z-50"
-      style={{
-        background: 'rgba(10, 10, 15, 0.8)',
-        backdropFilter: 'blur(20px)',
-        borderBottom: '1px solid var(--border-subtle)'
-      }}
+      className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200"
     >
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2.5 no-underline">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
-            style={{ background: 'linear-gradient(135deg, var(--accent-indigo), var(--accent-violet))' }}>
-            🚀
+        <Link to="/" className="flex items-center gap-2.5 no-underline group">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-black text-white group-hover:bg-gray-800 transition-colors">
+            <Hexagon size={18} />
           </div>
-          <span className="font-bold text-lg" style={{ color: 'var(--text-primary)' }}>
+          <span className="font-bold text-lg text-gray-900 tracking-tight">
             Community Copilot
           </span>
-          <span className="text-xs font-medium px-2 py-0.5 rounded-full"
-            style={{ background: 'var(--glow-indigo)', color: 'var(--accent-indigo)' }}>
+          <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
             AI
           </span>
         </Link>
 
         <div className="flex items-center gap-6">
           {!isHome && (
-            <Link to="/" className="text-sm no-underline" style={{ color: 'var(--text-secondary)' }}>
+            <Link to="/" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">
               Home
             </Link>
           )}
@@ -59,27 +53,26 @@ export default function Navbar() {
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <img 
-                  src={currentUser.photoURL || `https://ui-avatars.com/api/?name=${currentUser.displayName}&background=random`} 
+                  src={currentUser.photoURL || `https://ui-avatars.com/api/?name=${currentUser.displayName}&background=0D8ABC&color=fff`} 
                   alt="Profile" 
-                  className="w-8 h-8 rounded-full border border-[rgba(255,255,255,0.1)]"
+                  className="w-8 h-8 rounded-full border border-gray-200"
                 />
-                <span className="text-sm font-medium hidden md:block" style={{ color: 'var(--text-primary)' }}>
+                <span className="text-sm font-medium text-gray-700 hidden md:block">
                   {currentUser.displayName?.split(' ')[0] || 'User'}
                 </span>
               </div>
               <button 
                 onClick={handleAuthAction}
-                className="text-sm font-medium transition-colors hover:text-red-400"
-                style={{ color: 'var(--text-secondary)' }}
+                className="text-sm font-medium text-gray-500 hover:text-red-500 transition-colors flex items-center gap-1.5"
               >
+                <LogOut size={16} />
                 Sign Out
               </button>
             </div>
           ) : (
             <button 
               onClick={handleAuthAction} 
-              className="px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2"
-              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}
+              className="secondary-btn"
             >
               <svg viewBox="0 0 24 24" width="16" height="16" xmlns="http://www.w3.org/2000/svg">
                 <g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)">
@@ -92,7 +85,7 @@ export default function Navbar() {
               Sign In
             </button>
           )}
-          <Link to="/onboarding" className="glow-btn text-sm !py-2 !px-5 no-underline">
+          <Link to="/onboarding" className="glow-btn">
             Get Started
           </Link>
         </div>

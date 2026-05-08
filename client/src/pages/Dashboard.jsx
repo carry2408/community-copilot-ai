@@ -6,104 +6,127 @@ import { useAuth } from '../contexts/AuthContext'
 import { saveUserResults, getUserResults } from '../services/db'
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
-function TabButton({ active, onClick, children }) {
+import { 
+  FileText, CheckCircle, Files, Map as MapIcon, 
+  CheckCircle2, AlertCircle, XCircle, Lightbulb,
+  AlertTriangle, FileCheck, File, Clock, Zap, Target,
+  RotateCcw, Download, Loader2
+} from 'lucide-react'
+
+function TabButton({ active, onClick, icon, children }) {
   return (
     <button onClick={onClick}
-      className="px-5 py-2.5 rounded-xl text-sm font-medium transition-all"
-      style={{
-        background: active ? 'var(--glow-indigo)' : 'transparent',
-        color: active ? 'var(--accent-indigo)' : 'var(--text-secondary)',
-        border: active ? '1px solid rgba(99,102,241,0.3)' : '1px solid transparent'
-      }}>
+      className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 border ${
+        active ? 'bg-white border-gray-200 text-indigo-600 shadow-sm' : 'bg-transparent border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+      }`}>
+      {icon}
       {children}
     </button>
   )
 }
 
 function EligibilityTab({ results }) {
-  if (!results || !results.length) return <p style={{ color: 'var(--text-secondary)' }}>No eligibility results yet.</p>
+  if (!results || !results.length) return <p className="text-gray-500 text-sm">No eligibility results yet.</p>
 
-  const statusColors = { eligible: '#22c55e', partially_eligible: '#f59e0b', not_eligible: '#ef4444' }
-  const statusLabels = { eligible: '✅ Eligible', partially_eligible: '🟡 Partially Eligible', not_eligible: '❌ Not Eligible' }
+  const statusConfig = {
+    eligible: { color: 'text-emerald-600', bg: 'bg-emerald-50', icon: <CheckCircle2 size={16} />, label: 'Eligible' },
+    partially_eligible: { color: 'text-amber-600', bg: 'bg-amber-50', icon: <AlertCircle size={16} />, label: 'Partially Eligible' },
+    not_eligible: { color: 'text-red-600', bg: 'bg-red-50', icon: <XCircle size={16} />, label: 'Not Eligible' }
+  }
 
   return (
     <div className="space-y-4">
-      {results.map((r, i) => (
-        <motion.div key={r.schemeId || i}
-          initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
-          className="glass-card p-5">
-          <div className="flex items-start justify-between mb-3">
-            <h4 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>{r.schemeName}</h4>
-            <span className="text-xs font-medium px-3 py-1 rounded-full whitespace-nowrap"
-              style={{ background: `${statusColors[r.status]}20`, color: statusColors[r.status] }}>
-              {statusLabels[r.status]}
-            </span>
-          </div>
-          {r.confidence && (
-            <div className="mb-3">
-              <div className="flex justify-between text-xs mb-1">
-                <span style={{ color: 'var(--text-secondary)' }}>Confidence</span>
-                <span style={{ color: statusColors[r.status] }}>{r.confidence}%</span>
-              </div>
-              <div className="w-full h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.1)' }}>
-                <div className="h-full rounded-full transition-all" style={{ width: `${r.confidence}%`, background: statusColors[r.status] }} />
-              </div>
+      {results.map((r, i) => {
+        const conf = statusConfig[r.status] || statusConfig.not_eligible;
+        return (
+          <motion.div key={r.schemeId || i}
+            initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
+            className="glass-card p-6 bg-white shadow-sm border border-gray-200">
+            <div className="flex items-start justify-between mb-4">
+              <h4 className="text-base font-bold text-gray-900">{r.schemeName}</h4>
+              <span className={`text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1.5 ${conf.bg} ${conf.color}`}>
+                {conf.icon}
+                {conf.label}
+              </span>
             </div>
-          )}
-          <div className="space-y-1.5">
-            {(r.reasons || []).map((reason, j) => (
-              <p key={j} className="text-xs flex items-start gap-1.5" style={{ color: 'var(--text-secondary)' }}>
-                <span>•</span> {reason}
-              </p>
-            ))}
-          </div>
-          {r.tip && (
-            <div className="mt-3 p-2.5 rounded-lg text-xs" style={{ background: 'rgba(99,102,241,0.08)', color: 'var(--accent-indigo)' }}>
-              💡 {r.tip}
+            
+            {r.confidence && (
+              <div className="mb-5">
+                <div className="flex justify-between text-xs mb-1.5 font-medium">
+                  <span className="text-gray-500">Confidence Score</span>
+                  <span className={conf.color}>{r.confidence}%</span>
+                </div>
+                <div className="w-full h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                  <div className={`h-full transition-all ${conf.bg.replace('bg-', 'bg-').replace('50', '500')}`} style={{ width: `${r.confidence}%` }} />
+                </div>
+              </div>
+            )}
+            
+            <div className="space-y-2">
+              {(r.reasons || []).map((reason, j) => (
+                <p key={j} className="text-sm flex items-start gap-2 text-gray-600 leading-relaxed">
+                  <span className="text-gray-400 mt-1">•</span> {reason}
+                </p>
+              ))}
             </div>
-          )}
-        </motion.div>
-      ))}
+            
+            {r.tip && (
+              <div className="mt-5 p-3 rounded-lg text-sm bg-indigo-50 text-indigo-700 flex items-start gap-2 border border-indigo-100">
+                <Lightbulb size={18} className="shrink-0 mt-0.5" />
+                <span>{r.tip}</span>
+              </div>
+            )}
+          </motion.div>
+        )
+      })}
     </div>
   )
 }
 
 function DocumentsTab({ documents }) {
-  if (!documents) return <p style={{ color: 'var(--text-secondary)' }}>No document data yet.</p>
+  if (!documents) return <p className="text-gray-500 text-sm">No document data yet.</p>
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Missing alerts */}
       {documents.missingDocumentAlerts?.length > 0 && (
-        <div className="space-y-2">
-          <h4 className="text-sm font-semibold" style={{ color: '#ef4444' }}>⚠️ Missing Documents</h4>
+        <div className="space-y-3">
+          <h4 className="text-sm font-bold flex items-center gap-2 text-red-600 uppercase tracking-wide">
+            <AlertTriangle size={16} /> Missing Critical Documents
+          </h4>
           {documents.missingDocumentAlerts.map((alert, i) => (
-            <div key={i} className="glass-card p-4" style={{ borderColor: 'rgba(239,68,68,0.2)' }}>
-              <div className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{alert.document}</div>
-              <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>{alert.impact}</p>
-              <p className="text-xs mt-1" style={{ color: 'var(--accent-indigo)' }}>📍 {alert.howToGet}</p>
+            <div key={i} className="glass-card p-5 bg-red-50 border border-red-100 rounded-lg">
+              <div className="text-sm font-bold text-red-900">{alert.document}</div>
+              <p className="text-sm mt-1 text-red-700">{alert.impact}</p>
+              <div className="mt-3 flex items-start gap-2 text-sm text-red-600 bg-white p-2.5 rounded border border-red-50">
+                <Target size={16} className="shrink-0 mt-0.5" />
+                <span>{alert.howToGet}</span>
+              </div>
             </div>
           ))}
         </div>
       )}
+      
       {/* Categories */}
       {(documents.categories || []).map((cat, i) => (
         <motion.div key={i} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
-          <h4 className="text-sm font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>{cat.name}</h4>
+          <h4 className="text-sm font-bold text-gray-900 mb-3">{cat.name}</h4>
           <div className="space-y-2">
             {(cat.documents || []).map((doc, j) => (
-              <div key={j} className="glass-card p-3.5 flex items-center gap-3">
-                <span className="text-lg">{doc.likelyAvailable ? '✅' : '📄'}</span>
-                <div className="flex-1">
-                  <div className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{doc.name}</div>
-                  <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>{doc.estimatedTime}</div>
+              <div key={j} className="glass-card p-4 flex items-center gap-4 bg-white shadow-sm border border-gray-200">
+                <div className={`p-2 rounded-lg ${doc.likelyAvailable ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-500'}`}>
+                  {doc.likelyAvailable ? <FileCheck size={20} /> : <File size={20} />}
                 </div>
-                <span className="text-xs px-2 py-0.5 rounded-full"
-                  style={{
-                    background: doc.priority === 'high' ? 'rgba(239,68,68,0.15)' : 'rgba(245,158,11,0.15)',
-                    color: doc.priority === 'high' ? '#ef4444' : '#f59e0b'
-                  }}>
-                  {doc.priority}
+                <div className="flex-1">
+                  <div className="text-sm font-bold text-gray-900">{doc.name}</div>
+                  <div className="text-xs text-gray-500 flex items-center gap-1 mt-1">
+                    <Clock size={12} /> {doc.estimatedTime}
+                  </div>
+                </div>
+                <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+                  doc.priority === 'high' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'
+                }`}>
+                  {doc.priority.toUpperCase()}
                 </span>
               </div>
             ))}
@@ -115,45 +138,48 @@ function DocumentsTab({ documents }) {
 }
 
 function RoadmapTab({ roadmap }) {
-  if (!roadmap) return <p style={{ color: 'var(--text-secondary)' }}>No roadmap data yet.</p>
+  if (!roadmap) return <p className="text-gray-500 text-sm">No roadmap data yet.</p>
 
   return (
-    <div className="space-y-6">
-      <div className="flex gap-4 mb-4">
-        <div className="glass-card px-4 py-3 text-center">
-          <div className="text-2xl font-bold" style={{ color: 'var(--accent-indigo)' }}>{roadmap.totalSteps}</div>
-          <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>Steps</div>
+    <div className="space-y-8">
+      <div className="flex gap-4 mb-6">
+        <div className="glass-card flex-1 p-5 bg-white border border-gray-200 text-center">
+          <div className="text-3xl font-extrabold text-indigo-600">{roadmap.totalSteps}</div>
+          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mt-1">Steps</div>
         </div>
-        <div className="glass-card px-4 py-3 text-center">
-          <div className="text-2xl font-bold" style={{ color: 'var(--accent-emerald)' }}>{roadmap.estimatedTotalDays}</div>
-          <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>Days</div>
+        <div className="glass-card flex-1 p-5 bg-white border border-gray-200 text-center">
+          <div className="text-3xl font-extrabold text-emerald-600">{roadmap.estimatedTotalDays}</div>
+          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mt-1">Days</div>
         </div>
       </div>
 
       {(roadmap.phases || []).map((phase, i) => (
         <motion.div key={i} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
-              style={{ background: 'var(--glow-indigo)', color: 'var(--accent-indigo)' }}>
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold bg-indigo-50 text-indigo-600 border border-indigo-100">
               {phase.phase}
             </div>
             <div>
-              <h4 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{phase.title}</h4>
-              <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>{phase.duration}</span>
+              <h4 className="text-base font-bold text-gray-900">{phase.title}</h4>
+              <span className="text-xs font-medium text-gray-500 flex items-center gap-1 mt-0.5">
+                <Clock size={12} /> {phase.duration}
+              </span>
             </div>
           </div>
-          <div className="ml-4 border-l-2 pl-6 space-y-3" style={{ borderColor: 'var(--border-subtle)' }}>
+          <div className="ml-5 border-l-2 border-gray-200 pl-8 space-y-4 pb-4">
             {(phase.steps || []).map((step, j) => (
-              <div key={j} className="glass-card p-4">
-                <div className="text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>
+              <div key={j} className="glass-card p-5 bg-white border border-gray-200 shadow-sm relative">
+                <div className="absolute w-3 h-3 bg-white border-2 border-indigo-400 rounded-full -left-[39px] top-6" />
+                <div className="text-sm font-bold text-gray-900 mb-2">
                   {step.step}. {step.title}
                 </div>
-                <p className="text-xs mb-2" style={{ color: 'var(--text-secondary)' }}>{step.description}</p>
+                <p className="text-sm text-gray-600 mb-3 leading-relaxed">{step.description}</p>
                 {step.actionItems?.length > 0 && (
-                  <ul className="space-y-1">
+                  <ul className="space-y-1.5 bg-gray-50 p-3 rounded-lg border border-gray-100">
                     {step.actionItems.map((item, k) => (
-                      <li key={k} className="text-xs flex items-start gap-1.5" style={{ color: 'var(--text-secondary)' }}>
-                        <span style={{ color: 'var(--accent-indigo)' }}>→</span> {item}
+                      <li key={k} className="text-xs flex items-start gap-2 text-gray-600 font-medium">
+                        <Target size={14} className="text-indigo-400 shrink-0 mt-0.5" /> 
+                        {item}
                       </li>
                     ))}
                   </ul>
@@ -166,13 +192,17 @@ function RoadmapTab({ roadmap }) {
 
       {/* Quick Wins */}
       {roadmap.quickWins?.length > 0 && (
-        <div className="glass-card p-5" style={{ borderColor: 'rgba(34,197,94,0.2)' }}>
-          <h4 className="text-sm font-semibold mb-3" style={{ color: '#22c55e' }}>⚡ Quick Wins — Do These Today!</h4>
-          {roadmap.quickWins.map((win, i) => (
-            <p key={i} className="text-xs mb-1.5 flex items-start gap-1.5" style={{ color: 'var(--text-secondary)' }}>
-              <span>✓</span> {win}
-            </p>
-          ))}
+        <div className="glass-card p-6 bg-emerald-50 border border-emerald-100 mt-8">
+          <h4 className="text-sm font-bold text-emerald-800 mb-4 flex items-center gap-2 uppercase tracking-wide">
+            <Zap size={16} /> Quick Wins — Do These Today
+          </h4>
+          <div className="space-y-2">
+            {roadmap.quickWins.map((win, i) => (
+              <p key={i} className="text-sm flex items-start gap-2 text-emerald-700 font-medium">
+                <CheckCircle2 size={18} className="shrink-0 text-emerald-500" /> {win}
+              </p>
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -180,23 +210,23 @@ function RoadmapTab({ roadmap }) {
 }
 
 function SummaryTab({ simplification }) {
-  if (!simplification) return <p style={{ color: 'var(--text-secondary)' }}>No summary yet.</p>
+  if (!simplification) return <p className="text-gray-500 text-sm">No summary yet.</p>
   return (
-    <div className="glass-card p-6">
-      <h4 className="text-base font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-        📝 AI Summary
+    <div className="glass-card p-8 bg-white shadow-sm border border-gray-200">
+      <h4 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+        <Bot className="text-indigo-600" /> AI Executive Summary
       </h4>
-      <div className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: 'var(--text-secondary)' }}>
+      <div className="text-sm leading-relaxed text-gray-600 whitespace-pre-wrap font-medium">
         {simplification.summary}
       </div>
-      <div className="flex gap-4 mt-4 pt-4" style={{ borderTop: '1px solid var(--border-subtle)' }}>
-        <div className="text-center">
-          <div className="text-xl font-bold" style={{ color: '#22c55e' }}>{simplification.eligibleCount}</div>
-          <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>Eligible</div>
+      <div className="flex gap-8 mt-8 pt-6 border-t border-gray-100">
+        <div>
+          <div className="text-2xl font-extrabold text-emerald-600">{simplification.eligibleCount}</div>
+          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mt-1">Eligible Schemes</div>
         </div>
-        <div className="text-center">
-          <div className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>{simplification.totalChecked}</div>
-          <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>Checked</div>
+        <div>
+          <div className="text-2xl font-extrabold text-gray-900">{simplification.totalChecked}</div>
+          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mt-1">Total Checked</div>
         </div>
       </div>
     </div>
@@ -240,7 +270,7 @@ export default function Dashboard() {
     if (!contentRef.current) return
     setIsExporting(true)
     try {
-      const canvas = await html2canvas(contentRef.current, { scale: 2, backgroundColor: '#0a0a0f' })
+      const canvas = await html2canvas(contentRef.current, { scale: 2, backgroundColor: '#f9fafb' })
       const imgData = canvas.toDataURL('image/png')
       const pdf = new jsPDF('p', 'mm', 'a4')
       const pdfWidth = pdf.internal.pageSize.getWidth()
@@ -254,16 +284,23 @@ export default function Dashboard() {
   }
 
   if (isLoadingDB) {
-    return <div className="min-h-screen pt-24 text-center" style={{ color: 'var(--text-secondary)' }}>Loading your dashboard...</div>
+    return (
+      <div className="min-h-screen pt-32 pb-12 px-6 flex justify-center bg-gray-50">
+        <div className="flex flex-col items-center gap-4 text-gray-500">
+          <Loader2 className="animate-spin text-indigo-600" size={32} />
+          <p className="font-medium text-sm">Loading your dashboard...</p>
+        </div>
+      </div>
+    )
   }
 
   if (status !== 'completed') {
     return (
-      <div className="min-h-screen pt-24 pb-12 px-6 text-center">
-        <div className="glass-card max-w-md mx-auto p-10">
-          <div className="text-4xl mb-4">🔄</div>
-          <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>No Results Yet</h2>
-          <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>Complete the analysis workflow first.</p>
+      <div className="min-h-screen pt-32 pb-12 px-6 text-center bg-gray-50">
+        <div className="glass-card max-w-md mx-auto p-12 bg-white border border-gray-200 shadow-sm">
+          <RotateCcw className="mx-auto mb-6 text-gray-300" size={48} />
+          <h2 className="text-xl font-bold mb-2 text-gray-900">No Results Yet</h2>
+          <p className="text-sm mb-8 text-gray-500">Complete the analysis workflow to generate your custom dashboard.</p>
           <button onClick={() => navigate('/onboarding')} className="glow-btn">Start Analysis</button>
         </div>
       </div>
@@ -271,29 +308,29 @@ export default function Dashboard() {
   }
 
   const tabs = [
-    { id: 'summary', label: '📝 Summary' },
-    { id: 'eligibility', label: '✅ Eligibility' },
-    { id: 'documents', label: '📋 Documents' },
-    { id: 'roadmap', label: '🗺️ Roadmap' },
+    { id: 'summary', label: 'Summary', icon: <FileText size={16} /> },
+    { id: 'eligibility', label: 'Eligibility', icon: <CheckCircle size={16} /> },
+    { id: 'documents', label: 'Documents', icon: <Files size={16} /> },
+    { id: 'roadmap', label: 'Roadmap', icon: <MapIcon size={16} /> },
   ]
 
   return (
-    <div className="min-h-screen pt-24 pb-12 px-6">
+    <div className="min-h-screen pt-24 pb-12 px-6 bg-gray-50">
       <div className="max-w-4xl mx-auto">
-        <div ref={contentRef} className="p-4 -m-4 rounded-xl" style={{ background: isExporting ? 'var(--bg-primary)' : 'transparent' }}>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-            <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
-              🎯 Your Funding Dashboard
+        <div ref={contentRef} className="p-4 -m-4 rounded-2xl" style={{ background: isExporting ? '#f9fafb' : 'transparent' }}>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight mb-2">
+              Your Funding Dashboard
             </h1>
-            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-              AI analysis complete — {eligibilityResults?.filter(r => r.status === 'eligible').length || 0} schemes found eligible
+            <p className="text-sm font-medium text-gray-500">
+              AI analysis complete • {eligibilityResults?.filter(r => r.status === 'eligible').length || 0} schemes found eligible
             </p>
           </motion.div>
 
           {/* Tabs */}
-          <div className="flex gap-2 mb-6 flex-wrap" data-html2canvas-ignore={isExporting}>
+          <div className="flex gap-2 mb-8 bg-gray-200/50 p-1.5 rounded-xl w-max" data-html2canvas-ignore={isExporting}>
             {tabs.map(t => (
-              <TabButton key={t.id} active={activeTab === t.id} onClick={() => setActiveTab(t.id)}>
+              <TabButton key={t.id} active={activeTab === t.id} onClick={() => setActiveTab(t.id)} icon={t.icon}>
                 {t.label}
               </TabButton>
             ))}
@@ -309,16 +346,15 @@ export default function Dashboard() {
         </div>
 
         {/* Action bar */}
-        <div className="mt-8 flex gap-4">
+        <div className="mt-10 flex gap-4 pt-8 border-t border-gray-200">
           <button onClick={() => { useWorkflowStore.getState().reset(); navigate('/onboarding') }}
-            className="px-6 py-3 rounded-xl text-sm font-medium transition-colors hover:bg-[rgba(255,255,255,0.1)]"
-            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-subtle)', color: 'var(--text-secondary)' }}>
-            🔄 New Analysis
+            className="secondary-btn">
+            <RotateCcw size={16} /> New Analysis
           </button>
           
           <button onClick={exportPDF} disabled={isExporting}
-            className="glow-btn px-6 py-3 rounded-xl text-sm font-medium flex items-center gap-2">
-            {isExporting ? '⏳ Exporting...' : '📄 Download PDF'}
+            className="glow-btn">
+            {isExporting ? <><Loader2 size={16} className="animate-spin" /> Exporting...</> : <><Download size={16} /> Download PDF</>}
           </button>
         </div>
       </div>
