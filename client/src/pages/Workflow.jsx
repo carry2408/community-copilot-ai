@@ -159,7 +159,7 @@ export default function Workflow() {
     })
 
     return () => {
-      if (unsubscribe) unsubscribe()
+      if (unsubscribe) unsubscribe.close()
     }
   }, [workflowId, navigate, addAgentEvent])
 
