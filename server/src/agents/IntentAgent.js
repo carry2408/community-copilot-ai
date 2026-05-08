@@ -1,0 +1,33 @@
+import { BaseAgent } from './BaseAgent.js';
+import { askGeminiJSON } from '../config/gemini.js';
+
+export class IntentAgent extends BaseAgent {
+  constructor() {
+    super('Intent Agent', '🧠', '#8b5cf6');
+  }
+
+  async run(input) {
+    const { businessType, state, fundingGoal, revenue, startupAge, description } = input;
+    
+    const prompt = `You are an AI intent classifier for government funding assistance.
+
+A user has provided these business details:
+- Business Type: ${businessType}
+- State: ${state}
+- Funding Goal: ${fundingGoal}
+- Annual Revenue: ₹${revenue} Lakhs
+- Business Age: ${startupAge} years
+- Description: ${description || 'Not provided'}
+
+Classify their intent and needs. Return JSON:
+{
+  "primaryIntent": "scheme_discovery" | "loan_assistance" | "subsidy_claim" | "registration_help",
+  "businessCategory": "micro" | "small" | "medium" | "startup",
+  "urgency": "high" | "medium" | "low",
+  "focusAreas": ["list of relevant areas like manufacturing, services, technology etc"],
+  "summary": "One line summary of what the user needs"
+}`;
+
+    return await askGeminiJSON(prompt);
+  }
+}
