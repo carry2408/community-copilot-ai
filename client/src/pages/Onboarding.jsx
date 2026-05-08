@@ -64,8 +64,8 @@ export default function Onboarding() {
   }
 
   return (
-    <div className="min-h-screen pt-32 pb-12 px-6 bg-gray-50">
-      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-start">
+    <div className="min-h-screen pt-32 pb-12 bg-gray-50">
+      <div className="max-w-[1400px] w-full mx-auto px-6 md:px-12 lg:px-16 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24 items-start">
         
         {/* Left Column: Instructions */}
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="lg:col-span-5 lg:sticky lg:top-32">

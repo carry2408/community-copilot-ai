@@ -29,7 +29,7 @@ export default function Navbar() {
       animate={{ y: 0, opacity: 1 }}
       className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200"
     >
-      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div className="max-w-[1600px] w-full mx-auto px-6 md:px-12 lg:px-16 h-20 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2.5 no-underline group">
           <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-black text-white group-hover:bg-gray-800 transition-colors">
             <Hexagon size={18} />

@@ -315,8 +315,8 @@ export default function Dashboard() {
   ]
 
   return (
-    <div className="min-h-screen pt-32 pb-12 px-6 bg-gray-50">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen pt-32 pb-12 bg-gray-50">
+      <div className="max-w-[1400px] w-full mx-auto px-6 md:px-12 lg:px-16">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 lg:gap-12 items-start">
           
           {/* Sidebar */}

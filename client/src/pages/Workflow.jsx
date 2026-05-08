@@ -168,8 +168,8 @@ export default function Workflow() {
   }
 
   return (
-    <div className="min-h-screen pt-32 pb-12 px-6 bg-gray-50">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen pt-32 pb-12 bg-gray-50">
+      <div className="max-w-[1400px] w-full mx-auto px-6 md:px-12 lg:px-16">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-8 flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-white border border-gray-200 shadow-sm flex items-center justify-center text-indigo-600">
             <Bot size={22} />
