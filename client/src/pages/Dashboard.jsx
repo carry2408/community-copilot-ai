@@ -68,8 +68,8 @@ function EligibilityTab({ results }) {
           <div className="p-6">
             <div className="flex justify-between items-start mb-4">
               <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${r.status === 'eligible' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
-                  r.status === 'partially_eligible' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
-                    'bg-gray-50 text-gray-600 border border-gray-100'
+                r.status === 'partially_eligible' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
+                  'bg-gray-50 text-gray-600 border border-gray-100'
                 }`}>
                 {r.status?.replace('_', ' ')}
               </div>
@@ -123,16 +123,16 @@ function DocumentsTab({ documents }) {
 
   const renderTextWithLinks = (text) => {
     if (typeof text !== 'string') return text;
-    
+
     // Regex that catches http/https, www. , and common domain patterns like .gov.in without prefix
     const urlRegex = /((?:https?:\/\/|www\.)[^\s)]+|[a-zA-Z0-9.-]+\.(?:gov\.in|nic\.in|com|in|org)(?:\/[^\s)]*)?)/gi;
-    
+
     const parts = text.split(urlRegex);
     return parts.map((part, i) => {
       if (part && part.match(urlRegex)) {
         // Clean trailing punctuation
         let cleanUrl = part.replace(/[.,:;!]$/, '');
-        
+
         // Ensure href has protocol
         let href = cleanUrl;
         if (!/^https?:\/\//i.test(href)) {
@@ -140,12 +140,12 @@ function DocumentsTab({ documents }) {
         }
 
         return (
-          <a key={i} 
-             href={href} 
-             target="_blank" 
-             rel="noopener noreferrer" 
-             onClick={(e) => e.stopPropagation()}
-             className="inline-flex items-center gap-1.5 mx-1 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-lg text-[10px] font-bold transition-all shadow-md cursor-pointer relative z-50 whitespace-nowrap"
+          <a key={i}
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex items-center gap-1.5 mx-1 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-lg text-[10px] font-bold transition-all shadow-md cursor-pointer relative z-50 whitespace-nowrap"
           >
             Open Portal <ExternalLink size={10} />
           </a>
@@ -306,7 +306,7 @@ function SummaryTab({ simplification, eligibilityResults }) {
 
   const points = simplification.points || []
   const hasPoints = points.length > 0
-  
+
   const cleanText = (text) => {
     if (typeof text !== 'string') return '';
     return text
@@ -448,38 +448,48 @@ export default function Dashboard() {
     try {
       // Small delay to ensure any layout shifts settle
       await new Promise(r => setTimeout(r, 500))
-      
-      const canvas = await html2canvas(contentRef.current, { 
-        scale: 2, 
+
+      const canvas = await html2canvas(contentRef.current, {
+        scale: 2,
         backgroundColor: '#f9fafb',
         useCORS: true,
         logging: false,
         windowWidth: 1200,
         onclone: (clonedDoc) => {
-          // html2canvas doesn't support oklch colors (standard in Tailwind 4)
-          // We force standard colors on the clone for the export
+          // Robust fix for Tailwind 4 oklch colors
+          const allElements = clonedDoc.getElementsByTagName('*');
+          for (let i = 0; i < allElements.length; i++) {
+            const el = allElements[i];
+            // We need to check both inline styles and computed styles
+            const computed = window.getComputedStyle(el);
+            
+            ['color', 'backgroundColor', 'borderColor', 'fill', 'stroke'].forEach(prop => {
+              const val = computed[prop];
+              if (val && val.includes('oklch')) {
+                // If the browser supports oklch, it might return it in computed style
+                // html2canvas will fail to parse it. We force it to a safe color.
+                if (prop === 'backgroundColor') el.style[prop] = 'rgba(255,255,255,0)';
+                else if (prop === 'color') el.style[prop] = '#111827';
+                else el.style[prop] = '#e5e7eb';
+              }
+            });
+          }
+
           const style = clonedDoc.createElement('style');
           style.innerHTML = `
-            * { 
-              color-scheme: light !important; 
-            }
-            .text-indigo-600 { color: #4f46e5 !important; }
-            .bg-indigo-600 { background-color: #4f46e5 !important; }
-            .border-indigo-600 { border-color: #4f46e5 !important; }
-            .bg-emerald-50 { background-color: #ecfdf5 !important; }
-            .text-emerald-600 { color: #059669 !important; }
-            .bg-amber-50 { background-color: #fffbeb !important; }
-            .text-amber-600 { color: #d97706 !important; }
+            .text-indigo-600, .text-[#4f46e5] { color: #4f46e5 !important; }
+            .bg-indigo-600, .bg-[#4f46e5] { background-color: #4f46e5 !important; }
+            .border-indigo-600, .border-[#4f46e5] { border-color: #4f46e5 !important; }
           `;
           clonedDoc.head.appendChild(style);
         }
       })
-      
+
       const imgData = canvas.toDataURL('image/png')
       const pdf = new jsPDF('p', 'mm', 'a4')
       const pdfWidth = pdf.internal.pageSize.getWidth()
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width
-      
+
       // If content is very long, add pages
       const pageHeight = pdf.internal.pageSize.getHeight()
       let heightLeft = pdfHeight
@@ -588,24 +598,24 @@ export default function Dashboard() {
               )}
 
               {isExporting ? (
-                  <div className="space-y-20">
-                    <div>
-                      <h2 className="text-2xl font-bold text-[#4f46e5] mb-8 uppercase tracking-widest border-l-4 border-[#4f46e5] pl-4">I. Executive Summary</h2>
-                      <SummaryTab simplification={simplification} eligibilityResults={eligibilityResults} />
-                    </div>
-                    <div>
-                      <h2 className="text-2xl font-bold text-[#4f46e5] mb-8 uppercase tracking-widest border-l-4 border-[#4f46e5] pl-4">II. Scheme Eligibility</h2>
-                      <EligibilityTab results={eligibilityResults} />
-                    </div>
-                    <div>
-                      <h2 className="text-2xl font-bold text-[#4f46e5] mb-8 uppercase tracking-widest border-l-4 border-[#4f46e5] pl-4">III. Required Documents</h2>
-                      <DocumentsTab documents={documents} />
-                    </div>
-                    <div>
-                      <h2 className="text-2xl font-bold text-[#4f46e5] mb-8 uppercase tracking-widest border-l-4 border-[#4f46e5] pl-4">IV. Implementation Roadmap</h2>
-                      <RoadmapTab roadmap={roadmap} />
-                    </div>
+                <div className="space-y-20">
+                  <div>
+                    <h2 className="text-2xl font-bold text-[#4f46e5] mb-8 uppercase tracking-widest border-l-4 border-[#4f46e5] pl-4">I. Executive Summary</h2>
+                    <SummaryTab simplification={simplification} eligibilityResults={eligibilityResults} />
                   </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-[#4f46e5] mb-8 uppercase tracking-widest border-l-4 border-[#4f46e5] pl-4">II. Scheme Eligibility</h2>
+                    <EligibilityTab results={eligibilityResults} />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-[#4f46e5] mb-8 uppercase tracking-widest border-l-4 border-[#4f46e5] pl-4">III. Required Documents</h2>
+                    <DocumentsTab documents={documents} />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-[#4f46e5] mb-8 uppercase tracking-widest border-l-4 border-[#4f46e5] pl-4">IV. Implementation Roadmap</h2>
+                    <RoadmapTab roadmap={roadmap} />
+                  </div>
+                </div>
               ) : (
                 <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                   {activeTab === 'summary' && <SummaryTab simplification={simplification} eligibilityResults={eligibilityResults} />}
@@ -670,7 +680,7 @@ function AIChatbot({ context }) {
   return (
     <div className="fixed bottom-6 right-6 z-50" data-html2canvas-ignore>
       {isOpen ? (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           className="bg-white w-[350px] sm:w-[400px] h-[500px] rounded-3xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden"
@@ -692,9 +702,8 @@ function AIChatbot({ context }) {
           <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50">
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[80%] p-3 rounded-2xl text-sm ${
-                  m.role === 'user' ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-white border border-gray-100 text-gray-700 rounded-tl-none shadow-sm'
-                }`}>
+                <div className={`max-w-[80%] p-3 rounded-2xl text-sm ${m.role === 'user' ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-white border border-gray-100 text-gray-700 rounded-tl-none shadow-sm'
+                  }`}>
                   {m.content}
                 </div>
               </div>
@@ -710,7 +719,7 @@ function AIChatbot({ context }) {
 
           {/* Input */}
           <form onSubmit={handleSend} className="p-4 bg-white border-t border-gray-100 flex gap-2">
-            <input 
+            <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask anything..."
@@ -722,7 +731,7 @@ function AIChatbot({ context }) {
           </form>
         </motion.div>
       ) : (
-        <button 
+        <button
           onClick={() => setIsOpen(true)}
           className="w-16 h-16 bg-indigo-600 text-white rounded-full shadow-xl flex items-center justify-center hover:scale-110 transition-all group relative"
         >
