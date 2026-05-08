@@ -50,23 +50,106 @@ Be concise, professional, and helpful. If asked about applying for a scheme, pro
 });
 
 const STATE_SCHEMES = [
-  { "state": "Karnataka", "scheme": "Karnataka Elevate", "officialLink": "https://eitbt.karnataka.gov.in/startup" },
-  { "state": "Karnataka", "scheme": "Elevate NXT", "officialLink": "https://eitbt.karnataka.gov.in" },
-  { "state": "Maharashtra", "scheme": "Maharashtra State Innovation Society", "officialLink": "https://msins.in" },
-  { "state": "Tamil Nadu", "scheme": "StartupTN", "officialLink": "https://startuptn.in" },
-  { "state": "Delhi", "scheme": "Delhi Startup Policy", "officialLink": "https://dipp.delhi.gov.in" },
-  { "state": "Gujarat", "scheme": "Startup Gujarat", "officialLink": "https://startup.gujarat.gov.in" },
-  { "state": "Telangana", "scheme": "T-Hub", "officialLink": "https://t-hub.co" },
-  { "state": "Telangana", "scheme": "WE Hub", "officialLink": "https://wehub.telangana.gov.in" },
-  { "state": "Uttar Pradesh", "scheme": "UP Startup Policy", "officialLink": "https://startup.up.gov.in" },
-  { "state": "Rajasthan", "scheme": "iStart Rajasthan", "officialLink": "https://istart.rajasthan.gov.in" },
-  { "state": "Kerala", "scheme": "Kerala Startup Mission", "officialLink": "https://startupmission.kerala.gov.in" },
-  { "state": "West Bengal", "scheme": "Bengal Silicon Valley Hub", "officialLink": "https://bsv.wb.gov.in" },
-  { "state": "Madhya Pradesh", "scheme": "MP Startup Policy", "officialLink": "https://www.invest.mp.gov.in" },
-  { "state": "Andhra Pradesh", "scheme": "Startup Andhra Pradesh", "officialLink": "https://startup.ap.gov.in" },
-  { "state": "Bihar", "scheme": "Bihar Startup Policy", "officialLink": "https://startup.bihar.gov.in" },
-  { "state": "Punjab", "scheme": "Punjab Startup Portal", "officialLink": "https://startup.punjab.gov.in" },
-  { "state": "Haryana", "scheme": "Startup Haryana", "officialLink": "https://startupharyana.gov.in" }
+  {
+    "state": "Karnataka",
+    "scheme": "Mission Startup Karnataka",
+    "officialLink": "https://www.missionstartupkarnataka.org"
+  },
+  {
+    "state": "Karnataka",
+    "scheme": "Elevate Karnataka",
+    "officialLink": "https://www.missionstartupkarnataka.org/elevate-karnataka"
+  },
+  {
+    "state": "Maharashtra",
+    "scheme": "Maharashtra State Innovation Society",
+    "officialLink": "https://msins.in"
+  },
+  {
+    "state": "Maharashtra",
+    "scheme": "MAITRI Maharashtra",
+    "officialLink": "https://maitri.mahaonline.gov.in"
+  },
+  {
+    "state": "Tamil Nadu",
+    "scheme": "StartupTN",
+    "officialLink": "https://startuptn.in"
+  },
+  {
+    "state": "Delhi",
+    "scheme": "Delhi Startup Policy",
+    "officialLink": "https://dipp.delhi.gov.in"
+  },
+  {
+    "state": "Gujarat",
+    "scheme": "Startup Gujarat",
+    "officialLink": "https://startup.gujarat.gov.in"
+  },
+  {
+    "state": "Gujarat",
+    "scheme": "iCreate Gujarat",
+    "officialLink": "https://www.icreate.org.in"
+  },
+  {
+    "state": "Telangana",
+    "scheme": "T-Hub",
+    "officialLink": "https://t-hub.co"
+  },
+  {
+    "state": "Telangana",
+    "scheme": "WE Hub",
+    "officialLink": "https://wehub.telangana.gov.in"
+  },
+  {
+    "state": "Telangana",
+    "scheme": "Telangana Startup Portal",
+    "officialLink": "https://startup.telangana.gov.in"
+  },
+  {
+    "state": "Uttar Pradesh",
+    "scheme": "Startup UP",
+    "officialLink": "https://startup.up.gov.in"
+  },
+  {
+    "state": "Rajasthan",
+    "scheme": "iStart Rajasthan",
+    "officialLink": "https://istart.rajasthan.gov.in"
+  },
+  {
+    "state": "Kerala",
+    "scheme": "Kerala Startup Mission",
+    "officialLink": "https://startupmission.kerala.gov.in"
+  },
+  {
+    "state": "West Bengal",
+    "scheme": "Bengal Silicon Valley Hub",
+    "officialLink": "https://bsv.wb.gov.in"
+  },
+  {
+    "state": "Madhya Pradesh",
+    "scheme": "Invest MP Startup Support",
+    "officialLink": "https://www.invest.mp.gov.in"
+  },
+  {
+    "state": "Andhra Pradesh",
+    "scheme": "Startup Andhra Pradesh",
+    "officialLink": "https://startup.ap.gov.in"
+  },
+  {
+    "state": "Bihar",
+    "scheme": "Startup Bihar",
+    "officialLink": "https://startup.bihar.gov.in"
+  },
+  {
+    "state": "Punjab",
+    "scheme": "Startup Punjab",
+    "officialLink": "https://startup.punjab.gov.in"
+  },
+  {
+    "state": "Haryana",
+    "scheme": "Startup Haryana",
+    "officialLink": "https://startupharyana.gov.in"
+  }
 ];
 
 // Smart Link Discovery — also powered by Groq
