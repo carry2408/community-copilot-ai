@@ -454,7 +454,25 @@ export default function Dashboard() {
         backgroundColor: '#f9fafb',
         useCORS: true,
         logging: false,
-        windowWidth: 1200 // Ensure consistent width for capture
+        windowWidth: 1200,
+        onclone: (clonedDoc) => {
+          // html2canvas doesn't support oklch colors (standard in Tailwind 4)
+          // We force standard colors on the clone for the export
+          const style = clonedDoc.createElement('style');
+          style.innerHTML = `
+            * { 
+              color-scheme: light !important; 
+            }
+            .text-indigo-600 { color: #4f46e5 !important; }
+            .bg-indigo-600 { background-color: #4f46e5 !important; }
+            .border-indigo-600 { border-color: #4f46e5 !important; }
+            .bg-emerald-50 { background-color: #ecfdf5 !important; }
+            .text-emerald-600 { color: #059669 !important; }
+            .bg-amber-50 { background-color: #fffbeb !important; }
+            .text-amber-600 { color: #d97706 !important; }
+          `;
+          clonedDoc.head.appendChild(style);
+        }
       })
       
       const imgData = canvas.toDataURL('image/png')
@@ -570,24 +588,24 @@ export default function Dashboard() {
               )}
 
               {isExporting ? (
-                <div className="space-y-20">
-                  <div>
-                    <h2 className="text-2xl font-bold text-indigo-600 mb-8 uppercase tracking-widest border-l-4 border-indigo-600 pl-4">I. Executive Summary</h2>
-                    <SummaryTab simplification={simplification} eligibilityResults={eligibilityResults} />
+                  <div className="space-y-20">
+                    <div>
+                      <h2 className="text-2xl font-bold text-[#4f46e5] mb-8 uppercase tracking-widest border-l-4 border-[#4f46e5] pl-4">I. Executive Summary</h2>
+                      <SummaryTab simplification={simplification} eligibilityResults={eligibilityResults} />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold text-[#4f46e5] mb-8 uppercase tracking-widest border-l-4 border-[#4f46e5] pl-4">II. Scheme Eligibility</h2>
+                      <EligibilityTab results={eligibilityResults} />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold text-[#4f46e5] mb-8 uppercase tracking-widest border-l-4 border-[#4f46e5] pl-4">III. Required Documents</h2>
+                      <DocumentsTab documents={documents} />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold text-[#4f46e5] mb-8 uppercase tracking-widest border-l-4 border-[#4f46e5] pl-4">IV. Implementation Roadmap</h2>
+                      <RoadmapTab roadmap={roadmap} />
+                    </div>
                   </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-indigo-600 mb-8 uppercase tracking-widest border-l-4 border-indigo-600 pl-4">II. Scheme Eligibility</h2>
-                    <EligibilityTab results={eligibilityResults} />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-indigo-600 mb-8 uppercase tracking-widest border-l-4 border-indigo-600 pl-4">III. Required Documents</h2>
-                    <DocumentsTab documents={documents} />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-indigo-600 mb-8 uppercase tracking-widest border-l-4 border-indigo-600 pl-4">IV. Implementation Roadmap</h2>
-                    <RoadmapTab roadmap={roadmap} />
-                  </div>
-                </div>
               ) : (
                 <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                   {activeTab === 'summary' && <SummaryTab simplification={simplification} eligibilityResults={eligibilityResults} />}
