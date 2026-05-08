@@ -123,20 +123,29 @@ function DocumentsTab({ documents }) {
 
   const renderTextWithLinks = (text) => {
     if (typeof text !== 'string') return text;
-    // Improved regex to handle trailing punctuation better
-    const urlRegex = /(https?:\/\/[^\s)]+)/g;
+    
+    // Regex that catches http/https, www. , and common domain patterns like .gov.in without prefix
+    const urlRegex = /((?:https?:\/\/|www\.)[^\s)]+|[a-zA-Z0-9.-]+\.(?:gov\.in|nic\.in|com|in|org)(?:\/[^\s)]*)?)/gi;
+    
     const parts = text.split(urlRegex);
     return parts.map((part, i) => {
-      if (part.match(urlRegex)) {
-        // Clean trailing punctuation that might have been caught by the regex
-        const cleanUrl = part.replace(/[.,:;!]$/, '');
+      if (part && part.match(urlRegex)) {
+        // Clean trailing punctuation
+        let cleanUrl = part.replace(/[.,:;!]$/, '');
+        
+        // Ensure href has protocol
+        let href = cleanUrl;
+        if (!/^https?:\/\//i.test(href)) {
+          href = `https://${href}`;
+        }
+
         return (
           <a key={i} 
-             href={cleanUrl} 
+             href={href} 
              target="_blank" 
              rel="noopener noreferrer" 
              onClick={(e) => e.stopPropagation()}
-             className="inline-flex items-center gap-1.5 mx-1 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-lg text-[10px] font-bold transition-all shadow-md cursor-pointer relative z-50"
+             className="inline-flex items-center gap-1.5 mx-1 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-lg text-[10px] font-bold transition-all shadow-md cursor-pointer relative z-50 whitespace-nowrap"
           >
             Open Portal <ExternalLink size={10} />
           </a>
