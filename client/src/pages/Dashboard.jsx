@@ -10,7 +10,7 @@ import {
   FileText, CheckCircle, Files, Map as MapIcon, 
   CheckCircle2, AlertCircle, XCircle, Lightbulb,
   AlertTriangle, FileCheck, File, Clock, Zap, Target,
-  RotateCcw, Download, Loader2
+  RotateCcw, Download, Loader2, Bot
 } from 'lucide-react'
 
 function TabButton({ active, onClick, icon, children }) {
