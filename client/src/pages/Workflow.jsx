@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useWorkflowStore } from '../store/workflowStore'
-import { submitAnswers } from '../services/api'
+import { submitAnswers, createSSEConnection } from '../services/api'
 import { CheckCircle2, CircleDashed, Loader2, Mic, Bot, Sparkles, Send, Activity, AlertCircle, RotateCcw } from 'lucide-react'
 
 const AGENT_ORDER = [
@@ -144,12 +144,24 @@ function InterviewPanel({ questions, answers, setAnswer, onSubmit, submitting })
 
 export default function Workflow() {
   const navigate = useNavigate()
-  const { workflowId, status, agentEvents, interviewQuestions, interviewAnswers, setInterviewAnswer } = useWorkflowStore()
+  const { workflowId, status, agentEvents, interviewQuestions, interviewAnswers, setInterviewAnswer, addAgentEvent } = useWorkflowStore()
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
-    if (!workflowId) navigate('/onboarding')
-  }, [workflowId, navigate])
+    if (!workflowId) {
+      navigate('/onboarding')
+      return
+    }
+
+    // Re-connect to SSE if we refreshed or lost connection
+    const unsubscribe = createSSEConnection(workflowId, (event) => {
+      addAgentEvent(event)
+    })
+
+    return () => {
+      if (unsubscribe) unsubscribe()
+    }
+  }, [workflowId, navigate, addAgentEvent])
 
   useEffect(() => {
     if (status === 'completed') {

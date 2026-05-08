@@ -153,7 +153,11 @@ export class Orchestrator {
       });
 
     } catch (error) {
-      workflow.status = 'error';
+      console.error(`Workflow ${workflowId} failed:`, error);
+      const workflow = workflows.get(workflowId);
+      if (workflow) {
+        workflow.status = 'error';
+      }
       this.emit(workflowId, {
         agent: 'Orchestrator', emoji: '❌', color: '#ef4444',
         status: 'error', message: `Error: ${error.message}`
