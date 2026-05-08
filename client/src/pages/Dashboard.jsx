@@ -315,47 +315,68 @@ export default function Dashboard() {
   ]
 
   return (
-    <div className="min-h-screen pt-24 pb-12 px-6 bg-gray-50">
-      <div className="max-w-4xl mx-auto">
-        <div ref={contentRef} className="p-4 -m-4 rounded-2xl" style={{ background: isExporting ? '#f9fafb' : 'transparent' }}>
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight mb-2">
-              Your Funding Dashboard
-            </h1>
-            <p className="text-sm font-medium text-gray-500">
-              AI analysis complete • {eligibilityResults?.filter(r => r.status === 'eligible').length || 0} schemes found eligible
-            </p>
-          </motion.div>
+    <div className="min-h-screen pt-32 pb-12 px-6 bg-gray-50">
+      <div className="max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 lg:gap-12 items-start">
+          
+          {/* Sidebar */}
+          <div className="lg:col-span-1 lg:sticky lg:top-32 space-y-8" data-html2canvas-ignore={isExporting}>
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+              <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight mb-2">
+                Results Dashboard
+              </h1>
+              <p className="text-sm font-medium text-gray-500">
+                {eligibilityResults?.filter(r => r.status === 'eligible').length || 0} schemes found eligible
+              </p>
+            </motion.div>
 
-          {/* Tabs */}
-          <div className="flex gap-2 mb-8 bg-gray-200/50 p-1.5 rounded-xl w-max" data-html2canvas-ignore={isExporting}>
-            {tabs.map(t => (
-              <TabButton key={t.id} active={activeTab === t.id} onClick={() => setActiveTab(t.id)} icon={t.icon}>
-                {t.label}
-              </TabButton>
-            ))}
+            {/* Tabs */}
+            <div className="flex flex-col gap-2">
+              {tabs.map(t => (
+                <button key={t.id} onClick={() => setActiveTab(t.id)}
+                  className={`px-4 py-3 rounded-xl text-sm font-medium transition-all flex items-center gap-3 border ${
+                    activeTab === t.id ? 'bg-white border-gray-200 text-indigo-600 shadow-sm' : 'bg-transparent border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-200/50'
+                  }`}>
+                  {t.icon}
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Action bar */}
+            <div className="flex flex-col gap-3 pt-6 border-t border-gray-200">
+              <button onClick={exportPDF} disabled={isExporting}
+                className="glow-btn w-full !py-3">
+                {isExporting ? <><Loader2 size={16} className="animate-spin" /> Exporting...</> : <><Download size={16} /> Download PDF</>}
+              </button>
+              <button onClick={() => { useWorkflowStore.getState().reset(); navigate('/onboarding') }}
+                className="secondary-btn w-full !py-3">
+                <RotateCcw size={16} /> New Analysis
+              </button>
+            </div>
           </div>
 
-          {/* Tab Content */}
-          <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-            {activeTab === 'summary' && <SummaryTab simplification={simplification} />}
-            {activeTab === 'eligibility' && <EligibilityTab results={eligibilityResults} />}
-            {activeTab === 'documents' && <DocumentsTab documents={documents} />}
-            {activeTab === 'roadmap' && <RoadmapTab roadmap={roadmap} />}
-          </motion.div>
-        </div>
+          {/* Main Content */}
+          <div className="lg:col-span-3">
+            <div ref={contentRef} className="p-2 sm:p-4 -m-2 sm:-m-4 rounded-2xl" style={{ background: isExporting ? '#f9fafb' : 'transparent' }}>
+              
+              {/* Optional header for PDF export visibility */}
+              {isExporting && (
+                <div className="mb-8 pb-4 border-b border-gray-200">
+                  <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Your Funding Action Plan</h1>
+                  <p className="text-gray-500 mt-2">Community Copilot AI Generated Report</p>
+                </div>
+              )}
 
-        {/* Action bar */}
-        <div className="mt-10 flex gap-4 pt-8 border-t border-gray-200">
-          <button onClick={() => { useWorkflowStore.getState().reset(); navigate('/onboarding') }}
-            className="secondary-btn">
-            <RotateCcw size={16} /> New Analysis
-          </button>
-          
-          <button onClick={exportPDF} disabled={isExporting}
-            className="glow-btn">
-            {isExporting ? <><Loader2 size={16} className="animate-spin" /> Exporting...</> : <><Download size={16} /> Download PDF</>}
-          </button>
+              <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                {activeTab === 'summary' && <SummaryTab simplification={simplification} />}
+                {activeTab === 'eligibility' && <EligibilityTab results={eligibilityResults} />}
+                {activeTab === 'documents' && <DocumentsTab documents={documents} />}
+                {activeTab === 'roadmap' && <RoadmapTab roadmap={roadmap} />}
+              </motion.div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>

@@ -25,7 +25,7 @@ export default function Landing() {
   return (
     <div className="gradient-bg min-h-screen">
       {/* Hero */}
-      <div className="max-w-5xl mx-auto px-6 pt-32 pb-20 text-center">
+      <div className="max-w-5xl mx-auto px-6 pt-40 pb-20 text-center">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
           
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full mb-8 text-xs font-medium"

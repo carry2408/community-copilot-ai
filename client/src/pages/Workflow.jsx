@@ -168,7 +168,7 @@ export default function Workflow() {
   }
 
   return (
-    <div className="min-h-screen pt-24 pb-12 px-6 bg-gray-50">
+    <div className="min-h-screen pt-32 pb-12 px-6 bg-gray-50">
       <div className="max-w-6xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-8 flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-white border border-gray-200 shadow-sm flex items-center justify-center text-indigo-600">
