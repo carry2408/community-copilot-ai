@@ -1,17 +1,21 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-if (!process.env.GEMINI_API_KEY) {
-  console.error('❌ CRITICAL: GEMINI_API_KEY is missing from .env file!');
+// Clean the keys to remove hidden spaces/newlines
+const mainKey = (process.env.GEMINI_API_KEY || '').trim();
+const chatKey = (process.env.CHAT_GEMINI_API_KEY || '').trim() || mainKey;
+
+if (!mainKey) {
+  console.error('❌ CRITICAL: GEMINI_API_KEY is missing!');
 } else {
-  console.log(`✅ Main Gemini API Key detected (starts with: ${process.env.GEMINI_API_KEY.substring(0, 6)}...)`);
+  console.log(`✅ Main Key: [${mainKey.substring(0, 4)}...${mainKey.substring(mainKey.length - 4)}] (Length: ${mainKey.length})`);
 }
 
 if (process.env.CHAT_GEMINI_API_KEY) {
-  console.log(`✅ Chat Gemini API Key detected (starts with: ${process.env.CHAT_GEMINI_API_KEY.substring(0, 6)}...)`);
+  console.log(`✅ Chat Key: [${chatKey.substring(0, 4)}...${chatKey.substring(chatKey.length - 4)}] (Length: ${chatKey.length})`);
 }
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'MISSING_KEY');
-const chatGenAI = new GoogleGenerativeAI(process.env.CHAT_GEMINI_API_KEY || process.env.GEMINI_API_KEY);
+const genAI = new GoogleGenerativeAI(mainKey || 'MISSING_KEY');
+const chatGenAI = new GoogleGenerativeAI(chatKey || mainKey || 'MISSING_KEY');
 
 export const geminiModel = genAI.getGenerativeModel({ 
   model: 'gemini-1.5-flash',
