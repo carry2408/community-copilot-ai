@@ -442,75 +442,13 @@ export default function Dashboard() {
     return () => { if (timeoutId) clearTimeout(timeoutId) }
   }, [currentUser, status, eligibilityResults?.length])
 
-  const exportPDF = async () => {
-    if (!contentRef.current) return
+  const exportPDF = () => {
     setIsExporting(true)
-    try {
-      // Small delay to ensure any layout shifts settle
-      await new Promise(r => setTimeout(r, 500))
-
-      const canvas = await html2canvas(contentRef.current, {
-        scale: 2,
-        backgroundColor: '#f9fafb',
-        useCORS: true,
-        logging: false,
-        windowWidth: 1200,
-        onclone: (clonedDoc) => {
-          // Robust fix for Tailwind 4 oklch colors
-          const allElements = clonedDoc.getElementsByTagName('*');
-          for (let i = 0; i < allElements.length; i++) {
-            const el = allElements[i];
-            // We need to check both inline styles and computed styles
-            const computed = window.getComputedStyle(el);
-            
-            ['color', 'backgroundColor', 'borderColor', 'fill', 'stroke'].forEach(prop => {
-              const val = computed[prop];
-              if (val && val.includes('oklch')) {
-                // If the browser supports oklch, it might return it in computed style
-                // html2canvas will fail to parse it. We force it to a safe color.
-                if (prop === 'backgroundColor') el.style[prop] = 'rgba(255,255,255,0)';
-                else if (prop === 'color') el.style[prop] = '#111827';
-                else el.style[prop] = '#e5e7eb';
-              }
-            });
-          }
-
-          const style = clonedDoc.createElement('style');
-          style.innerHTML = `
-            .text-indigo-600, .text-[#4f46e5] { color: #4f46e5 !important; }
-            .bg-indigo-600, .bg-[#4f46e5] { background-color: #4f46e5 !important; }
-            .border-indigo-600, .border-[#4f46e5] { border-color: #4f46e5 !important; }
-          `;
-          clonedDoc.head.appendChild(style);
-        }
-      })
-
-      const imgData = canvas.toDataURL('image/png')
-      const pdf = new jsPDF('p', 'mm', 'a4')
-      const pdfWidth = pdf.internal.pageSize.getWidth()
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width
-
-      // If content is very long, add pages
-      const pageHeight = pdf.internal.pageSize.getHeight()
-      let heightLeft = pdfHeight
-      let position = 0
-
-      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight)
-      heightLeft -= pageHeight
-
-      while (heightLeft >= 0) {
-        position = heightLeft - pdfHeight
-        pdf.addPage()
-        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight)
-        heightLeft -= pageHeight
-      }
-
-      pdf.save(`Community-Copilot-Report-${currentUser.displayName || 'Business'}.pdf`)
-    } catch (err) {
-      console.error("Failed to export PDF:", err)
-      alert("PDF Export failed. Please try again.")
-    }
-    setIsExporting(false)
+    // Wait for the full report to render, then print
+    setTimeout(() => {
+      window.print()
+      setIsExporting(false)
+    }, 500)
   }
 
   if (isLoadingDB) {

@@ -161,3 +161,62 @@ select.input-dark option { background: #ffffff; color: #09090b; }
   animation: blink 1s infinite;
   color: var(--text-primary);
 }
+/* Print Styling for PDF Export */
+@media print {
+  @page {
+    size: A4;
+    margin: 20mm;
+  }
+  
+  body {
+    background: white !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Hide UI elements not needed in the report */
+  .lg\:sticky, 
+  nav, 
+  .fixed, 
+  [data-html2canvas-ignore],
+  button:not(.print-visible),
+  .sidebar,
+  .chatbot-bubble {
+    display: none !important;
+  }
+
+  /* Layout adjustments for print */
+  .lg\:col-span-3 {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .lg\:col-span-4, 
+  .grid {
+    display: block !important;
+  }
+
+  /* Ensure colors and backgrounds print */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .glass-card {
+    break-inside: avoid;
+    border: 1px solid #e5e7eb !important;
+    margin-bottom: 20px !important;
+    box-shadow: none !important;
+  }
+
+  h1, h2, h3 {
+    color: #4f46e5 !important;
+    page-break-after: avoid;
+  }
+
+  .min-h-screen {
+    min-h: auto !important;
+    padding-top: 0 !important;
+  }
+}
