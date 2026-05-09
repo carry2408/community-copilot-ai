@@ -33,7 +33,11 @@ router.post('/', async (req, res) => {
 The user's eligible schemes are: ${eligibleSchemes.join(', ') || 'None found yet'}
 Summary: ${context?.simplification?.intro || ''}
 
-Be concise, professional, and helpful. If asked about applying for a scheme, provide the most official government portal link you know.`
+Structure your answers professionally using:
+- Bold text for key terms or scheme names.
+- Bullet points (starting with *) for lists of requirements or benefits.
+- Clear, separated paragraphs for better readability.
+Be concise and helpful.`
         },
         { role: 'user', content: message }
       ],

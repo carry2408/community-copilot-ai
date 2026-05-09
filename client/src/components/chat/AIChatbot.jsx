@@ -94,12 +94,7 @@ export default function AIChatbot({ context, initialMessage, isOpenExternally, s
                       ? 'bg-indigo-600 text-white rounded-tr-none' 
                       : 'bg-white border border-gray-100 text-gray-700 rounded-tl-none shadow-sm'
                   }`}>
-                    {m.content.split('*').map((part, index) => (
-                      <span key={index}>
-                        {part}
-                        {index < m.content.split('*').length - 1 && <br />}
-                      </span>
-                    ))}
+                    <FormattedMessage content={m.content} />
                   </div>
                 </div>
               ))}
@@ -111,8 +106,6 @@ export default function AIChatbot({ context, initialMessage, isOpenExternally, s
                 </div>
               )}
             </div>
-
-
 
             {/* Input */}
             <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="p-4 bg-white border-t border-gray-100 flex gap-2">
@@ -146,4 +139,40 @@ export default function AIChatbot({ context, initialMessage, isOpenExternally, s
       )}
     </div>
   )
+}
+
+function FormattedMessage({ content }) {
+  // Split into lines first
+  const lines = content.split('\n');
+  
+  return (
+    <div className="space-y-3">
+      {lines.map((line, lIdx) => {
+        // Handle Bullet Points
+        const isBullet = line.trim().startsWith('* ');
+        const cleanLine = isBullet ? line.trim().substring(2) : line;
+
+        // Handle Bold (**text**)
+        const parts = cleanLine.split(/(\*\*.*?\*\*)/g);
+
+        const renderedLine = parts.map((part, pIdx) => {
+          if (part.startsWith('**') && part.endsWith('**')) {
+            return <strong key={pIdx} className="font-bold text-indigo-700">{part.slice(2, -2)}</strong>;
+          }
+          return part;
+        });
+
+        if (isBullet) {
+          return (
+            <div key={lIdx} className="flex gap-2 pl-2">
+              <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0" />
+              <div className="flex-1">{renderedLine}</div>
+            </div>
+          );
+        }
+
+        return <div key={lIdx}>{renderedLine}</div>;
+      })}
+    </div>
+  );
 }
