@@ -60,84 +60,155 @@ function AgentTimeline({ events }) {
   )
 }
 
-function InterviewPanel({ questions, answers, setAnswer, onSubmit, submitting }) {
-  const allAnswered = questions.length > 0 && questions.every(q => answers[q.id] !== undefined && answers[q.id] !== '')
+function ChatInterview({ questions, answers, setAnswer, onSubmit, submitting }) {
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [messages, setMessages] = useState([])
+  const chatEndRef = useRef(null)
+
+  useEffect(() => {
+    if (questions.length > 0 && messages.length === 0) {
+      setMessages([{
+        role: 'assistant',
+        content: questions[0].question,
+        purpose: questions[0].purpose
+      }])
+    }
+  }, [questions])
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
+  const handleNext = (value) => {
+    setAnswer(questions[currentIndex].id, value)
+    
+    const newMessages = [
+      ...messages,
+      { role: 'user', content: value }
+    ]
+
+    if (currentIndex < questions.length - 1) {
+      setTimeout(() => {
+        setMessages([
+          ...newMessages,
+          {
+            role: 'assistant',
+            content: questions[currentIndex + 1].question,
+            purpose: questions[currentIndex + 1].purpose
+          }
+        ])
+        setCurrentIndex(currentIndex + 1)
+      }, 600)
+    } else {
+      setMessages(newMessages)
+      setCurrentIndex(questions.length) // All answered
+    }
+  }
+
+  const currentQ = questions[currentIndex]
+  const isFinished = currentIndex >= questions.length
 
   return (
-    <div className="space-y-6">
-      <div className="border-b border-gray-100 pb-4">
-        <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-1">
-          <Mic className="text-amber-500" size={20} />
-          Eligibility Interview
-        </h3>
-        <p className="text-sm text-gray-500">
-          Answer these questions so our AI can determine your exact eligibility.
-        </p>
+    <div className="flex flex-col h-[600px] bg-white rounded-[2rem] border border-gray-100 shadow-2xl overflow-hidden relative">
+      {/* Header */}
+      <div className="p-6 border-b border-gray-50 bg-white/50 backdrop-blur-sm flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600">
+            <Mic size={20} />
+          </div>
+          <div>
+            <div className="text-sm font-bold text-gray-900">Eligibility Interview</div>
+            <div className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">Agent Active</div>
+          </div>
+        </div>
       </div>
 
-      <div className="space-y-6">
-        <AnimatePresence>
-          {questions.map((q, i) => (
-            <motion.div key={q.id}
-              initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
-              className="glass-card p-6 bg-white shadow-sm border border-gray-200">
-              <div className="text-sm font-semibold text-gray-900 mb-2 leading-relaxed">
-                {q.question}
-              </div>
-              <div className="text-xs text-gray-500 mb-4 bg-gray-50 p-2.5 rounded-lg border border-gray-100 flex gap-2">
-                <Bot size={14} className="text-indigo-500 shrink-0 mt-0.5" />
-                <span>{q.purpose}</span>
-              </div>
-
-              {q.type === 'yes_no' && (
-                <div className="flex gap-3">
-                  {['Yes', 'No'].map(opt => (
-                    <button key={opt} type="button"
-                      onClick={() => setAnswer(q.id, opt)}
-                      className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all border ${answers[q.id] === opt ? 'bg-indigo-50 border-indigo-600 text-indigo-700' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}
-                    >
-                      {opt}
-                    </button>
-                  ))}
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-8 space-y-6">
+        <AnimatePresence initial={false}>
+          {messages.map((m, idx) => (
+            <motion.div key={idx} initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }}
+              className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className="max-w-[85%] space-y-2">
+                <div className={`p-4 rounded-2xl text-sm leading-relaxed shadow-sm ${
+                  m.role === 'user' 
+                    ? 'bg-indigo-600 text-white rounded-tr-none' 
+                    : 'bg-gray-50 text-gray-800 border border-gray-100 rounded-tl-none'
+                }`}>
+                  {m.content}
                 </div>
-              )}
-
-              {q.type === 'multiple_choice' && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {(q.options || []).map(opt => (
-                    <button key={opt} type="button"
-                      onClick={() => setAnswer(q.id, opt)}
-                      className={`p-3 rounded-lg text-sm text-left transition-all border ${answers[q.id] === opt ? 'bg-indigo-50 border-indigo-600 text-indigo-700 font-medium shadow-sm' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300'}`}
-                    >
-                      {opt}
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {(q.type === 'number' || q.type === 'text') && (
-                <input type={q.type === 'number' ? 'number' : 'text'} className="input-dark bg-gray-50"
-                  placeholder="Type your answer..."
-                  value={answers[q.id] || ''}
-                  onChange={e => setAnswer(q.id, e.target.value)} />
-              )}
+                {m.purpose && (
+                  <div className="text-[10px] text-gray-400 pl-1 flex items-center gap-1">
+                    <Bot size={10} /> {m.purpose}
+                  </div>
+                )}
+              </div>
             </motion.div>
           ))}
         </AnimatePresence>
+        <div ref={chatEndRef} />
       </div>
 
-      {questions.length > 0 && (
-        <motion.button initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
-          onClick={onSubmit} disabled={!allAnswered || submitting}
-          className="glow-btn w-full !py-4 shadow-md">
-          {submitting ? (
-            <><Loader2 size={18} className="animate-spin" /> Validating...</>
-          ) : (
-            <><Send size={18} /> Submit Answers & Validate</>
-          )}
-        </motion.button>
-      )}
+      {/* Inputs */}
+      <div className="p-6 bg-gray-50/50 border-t border-gray-100">
+        {!isFinished ? (
+          <div className="space-y-4">
+            {currentQ?.type === 'yes_no' && (
+              <div className="flex gap-3">
+                {['Yes', 'No'].map(opt => (
+                  <button key={opt} onClick={() => handleNext(opt)}
+                    className="flex-1 bg-white border border-gray-200 py-3 rounded-xl text-sm font-bold text-gray-700 hover:border-indigo-600 hover:text-indigo-600 transition-all shadow-sm">
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {currentQ?.type === 'multiple_choice' && (
+              <div className="grid grid-cols-2 gap-3">
+                {(currentQ.options || []).map(opt => (
+                  <button key={opt} onClick={() => handleNext(opt)}
+                    className="bg-white border border-gray-200 p-3 rounded-xl text-xs font-bold text-gray-700 hover:border-indigo-600 hover:text-indigo-600 transition-all shadow-sm">
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {(currentQ?.type === 'number' || currentQ?.type === 'text') && (
+              <div className="flex gap-2">
+                <input 
+                  autoFocus
+                  type={currentQ.type === 'number' ? 'number' : 'text'}
+                  className="flex-1 bg-white border border-gray-200 p-4 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-indigo-600 shadow-sm"
+                  placeholder="Type your answer..."
+                  onKeyPress={(e) => e.key === 'Enter' && e.target.value && handleNext(e.target.value)}
+                />
+                <button 
+                  onClick={(e) => {
+                    const input = e.currentTarget.previousSibling
+                    if (input.value) handleNext(input.value)
+                  }}
+                  className="w-12 h-12 bg-indigo-600 text-white rounded-xl flex items-center justify-center hover:bg-indigo-700 shadow-lg shadow-indigo-100"
+                >
+                  <Send size={18} />
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <motion.button initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+            onClick={onSubmit} disabled={submitting}
+            className="glow-btn w-full !py-4 shadow-xl"
+          >
+            {submitting ? (
+              <><Loader2 size={18} className="animate-spin" /> Validating Eligibility...</>
+            ) : (
+              <><Sparkles size={18} /> Submit Interview & Get Results</>
+            )}
+          </motion.button>
+        )}
+      </div>
     </div>
   )
 }
@@ -205,7 +276,7 @@ export default function Workflow() {
           {/* Main Content — Right */}
           <div className="lg:col-span-3">
             {status === 'awaiting_answers' && interviewQuestions.length > 0 ? (
-              <InterviewPanel
+              <ChatInterview
                 questions={interviewQuestions}
                 answers={interviewAnswers}
                 setAnswer={setInterviewAnswer}
