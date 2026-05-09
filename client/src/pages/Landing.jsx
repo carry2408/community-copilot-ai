@@ -26,6 +26,7 @@ export default function Landing() {
   const navigate = useNavigate()
   const { currentUser } = useAuth()
   const [isChatOpen, setIsChatOpen] = useState(false)
+  const [chatTrigger, setChatTrigger] = useState(null)
 
   return (
     <div className="gradient-bg min-h-screen">
@@ -87,7 +88,11 @@ export default function Landing() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <button 
-                onClick={() => setIsChatOpen(true)}
+                onClick={() => {
+                  setChatTrigger("How can Community Copilot help me?")
+                  // Small delay to ensure state update triggers the effect
+                  setTimeout(() => setChatTrigger(null), 100)
+                }}
                 className="bg-white text-indigo-600 px-8 py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 hover:bg-indigo-50 transition-all shadow-xl"
               >
                 <MessageSquare size={20} />
@@ -111,7 +116,10 @@ export default function Landing() {
               ].map(pill => (
                 <button 
                   key={pill}
-                  onClick={() => setIsChatOpen(true)}
+                  onClick={() => {
+                    setChatTrigger(pill)
+                    setTimeout(() => setChatTrigger(null), 100)
+                  }}
                   className="bg-white/10 hover:bg-white/20 border border-white/10 px-4 py-2 rounded-full text-xs font-semibold backdrop-blur-sm transition-all"
                 >
                   {pill}
@@ -180,7 +188,11 @@ export default function Landing() {
           <p>&copy; 2026 Community Copilot AI. All rights reserved.</p>
         </p>
       </footer>
-      <AIChatbot isOpenExternally={isChatOpen} setIsOpenExternally={setIsChatOpen} />
+      <AIChatbot 
+        isOpenExternally={isChatOpen} 
+        setIsOpenExternally={setIsChatOpen} 
+        triggeredMessage={chatTrigger}
+      />
     </div>
   )
 }

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Bot, X, Send, Loader2, MessageSquare, Sparkles } from 'lucide-react'
 
-export default function AIChatbot({ context, initialMessage, isOpenExternally, setIsOpenExternally }) {
+export default function AIChatbot({ context, initialMessage, isOpenExternally, setIsOpenExternally, triggeredMessage }) {
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState([
     { role: 'assistant', content: initialMessage || "Hi! I'm your Community Copilot AI. How can I help you with government schemes today?" }
@@ -17,6 +17,13 @@ export default function AIChatbot({ context, initialMessage, isOpenExternally, s
       if (setIsOpenExternally) setIsOpenExternally(false)
     }
   }, [isOpenExternally])
+
+  useEffect(() => {
+    if (triggeredMessage) {
+      setIsOpen(true)
+      handleSend(triggeredMessage)
+    }
+  }, [triggeredMessage])
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight
@@ -114,8 +121,10 @@ export default function AIChatbot({ context, initialMessage, isOpenExternally, s
                 {suggestions.map((s, i) => (
                   <button 
                     key={i} 
+                    type="button"
+                    disabled={isTyping}
                     onClick={() => handleSend(s)}
-                    className="w-full text-left p-3 text-xs font-semibold text-indigo-600 bg-indigo-50/50 border border-indigo-100 rounded-xl hover:bg-indigo-600 hover:text-white transition-all"
+                    className="w-full text-left p-3 text-xs font-semibold text-indigo-600 bg-indigo-50/50 border border-indigo-100 rounded-xl hover:bg-indigo-600 hover:text-white transition-all disabled:opacity-50"
                   >
                     {s}
                   </button>
