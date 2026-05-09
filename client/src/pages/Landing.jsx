@@ -185,9 +185,9 @@ export default function Landing() {
           </div>
           <span className="font-semibold text-gray-900">Community Copilot AI</span>
         </div>
-        <p className="text-sm text-gray-500">
+        <div className="text-sm text-gray-500">
           <p>&copy; 2026 Community Copilot AI. All rights reserved.</p>
-        </p>
+        </div>
       </footer>
       <AIChatbot 
         isOpenExternally={isChatOpen} 
