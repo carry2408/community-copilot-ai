@@ -74,9 +74,11 @@ export default function Navbar() {
               Sign In
             </Link>
           )}
-          <Link to="/onboarding" className="glow-btn">
-            Get Started
-          </Link>
+          {!currentUser && (
+            <Link to="/onboarding" className="glow-btn">
+              Get Started
+            </Link>
+          )}
         </div>
       </div>
     </motion.nav>

@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 import { Brain, Search, Mic, ShieldCheck, FileText, Files, Map as MapIcon, Target, ClipboardList, ArrowRight, Zap, Hexagon } from 'lucide-react'
 
 const agents = [
@@ -21,6 +22,7 @@ const features = [
 
 export default function Landing() {
   const navigate = useNavigate()
+  const { currentUser } = useAuth()
 
   return (
     <div className="gradient-bg min-h-screen">
@@ -47,8 +49,8 @@ export default function Landing() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-6 justify-center mb-28">
-            <button onClick={() => navigate('/onboarding')} className="glow-btn px-10 py-4 text-lg shadow-xl">
-              Start Free Analysis
+            <button onClick={() => navigate(currentUser ? '/dashboard' : '/onboarding')} className="glow-btn px-10 py-4 text-lg shadow-xl">
+              {currentUser ? 'Go to Dashboard' : 'Start Free Analysis'}
               <ArrowRight size={20} />
             </button>
             <button onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
