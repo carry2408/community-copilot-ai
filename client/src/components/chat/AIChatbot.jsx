@@ -1,15 +1,21 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Bot, X, Send, Loader2, MessageSquare, Sparkles } from 'lucide-react'
+import { Bot, X, Send, Loader2, MessageSquare, Sparkles, RotateCcw, Trash2 } from 'lucide-react'
 
 export default function AIChatbot({ context, initialMessage, isOpenExternally, setIsOpenExternally, triggeredMessage }) {
   const [isOpen, setIsOpen] = useState(false)
-  const [messages, setMessages] = useState([
-    { role: 'assistant', content: initialMessage || "Hi! I'm your Community Copilot AI. How can I help you with government schemes today?" }
-  ])
+  const defaultMsg = { role: 'assistant', content: initialMessage || "Hi! I'm your Community Copilot AI. How can I help you with government schemes today?" }
+  const [messages, setMessages] = useState([defaultMsg])
   const [input, setInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const scrollRef = useRef()
+  const messagesEndRef = useRef()
+
+  const clearChat = () => {
+    if (window.confirm("Are you sure you want to clear this conversation?")) {
+      setMessages([defaultMsg])
+    }
+  }
 
   useEffect(() => {
     if (isOpenExternally) {
@@ -26,8 +32,10 @@ export default function AIChatbot({ context, initialMessage, isOpenExternally, s
   }, [triggeredMessage])
 
   useEffect(() => {
-    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight
-  }, [messages])
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [messages, isTyping])
 
   const handleSend = async (customMsg) => {
     const userMsg = customMsg || input.trim()
@@ -80,9 +88,18 @@ export default function AIChatbot({ context, initialMessage, isOpenExternally, s
                   </div>
                 </div>
               </div>
-              <button onClick={() => setIsOpen(false)} className="hover:bg-white/10 p-2 rounded-xl transition-all">
-                <X size={20} />
-              </button>
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={clearChat} 
+                  title="Clear Conversation"
+                  className="hover:bg-white/10 p-2 rounded-xl transition-all"
+                >
+                  <RotateCcw size={18} />
+                </button>
+                <button onClick={() => setIsOpen(false)} className="hover:bg-white/10 p-2 rounded-xl transition-all">
+                  <X size={20} />
+                </button>
+              </div>
             </div>
 
             {/* Messages */}
@@ -105,6 +122,7 @@ export default function AIChatbot({ context, initialMessage, isOpenExternally, s
                   </div>
                 </div>
               )}
+              <div ref={messagesEndRef} />
             </div>
 
             {/* Input */}
