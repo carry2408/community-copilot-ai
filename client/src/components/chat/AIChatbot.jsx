@@ -94,7 +94,12 @@ export default function AIChatbot({ context, initialMessage, isOpenExternally, s
                       ? 'bg-indigo-600 text-white rounded-tr-none' 
                       : 'bg-white border border-gray-100 text-gray-700 rounded-tl-none shadow-sm'
                   }`}>
-                    {m.content}
+                    {m.content.split('*').map((part, index) => (
+                      <span key={index}>
+                        {part}
+                        {index < m.content.split('*').length - 1 && <br />}
+                      </span>
+                    ))}
                   </div>
                 </div>
               ))}
