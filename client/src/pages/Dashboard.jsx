@@ -206,18 +206,32 @@ function DocumentsTab({ documents }) {
 }
 
 function RoadmapTab({ roadmap }) {
+  const [checkedItems, setCheckedItems] = useState({})
+
   if (!roadmap) return <p className="text-gray-500 text-sm">No roadmap data yet.</p>
+
+  const toggleItem = (phaseIdx, stepIdx, itemIdx) => {
+    const key = `${phaseIdx}-${stepIdx}-${itemIdx}`
+    setCheckedItems(prev => ({ ...prev, [key]: !prev[key] }))
+  }
+
+  const isStepDone = (phaseIdx, stepIdx, actionItems) => {
+    if (!actionItems || actionItems.length === 0) return false
+    return actionItems.every((_, i) => checkedItems[`${phaseIdx}-${stepIdx}-${i}`])
+  }
 
   return (
     <div className="space-y-8">
       <div className="flex gap-4 mb-6">
         <div className="glass-card flex-1 p-5 bg-white border border-gray-200 text-center">
           <div className="text-3xl font-extrabold text-indigo-600">{roadmap.totalSteps}</div>
-          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mt-1">Steps</div>
+          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mt-1">Total Steps</div>
         </div>
         <div className="glass-card flex-1 p-5 bg-white border border-gray-200 text-center">
-          <div className="text-3xl font-extrabold text-emerald-600">{roadmap.estimatedTotalDays}</div>
-          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mt-1">Days</div>
+          <div className="text-3xl font-extrabold text-emerald-600">
+            {Object.values(checkedItems).filter(Boolean).length}
+          </div>
+          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mt-1">Actions Completed</div>
         </div>
       </div>
 
@@ -229,28 +243,40 @@ function RoadmapTab({ roadmap }) {
             </div>
             <div>
               <h4 className="text-base font-bold text-gray-900">{phase.title}</h4>
-              <span className="text-xs font-medium text-gray-500 flex items-center gap-1 mt-0.5">
-                <Clock size={12} /> {phase.duration}
-              </span>
             </div>
           </div>
           <div className="ml-5 border-l-2 border-gray-200 pl-8 space-y-4 pb-4">
             {(phase.steps || []).map((step, j) => (
               <div key={j} className="glass-card p-5 bg-white border border-gray-200 shadow-sm relative">
                 <div className="absolute w-3 h-3 bg-white border-2 border-indigo-400 rounded-full -left-[39px] top-6" />
-                <div className="text-sm font-bold text-gray-900 mb-2">
-                  {step.step}. {step.title}
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-sm font-bold text-gray-900">
+                    {step.step}. {step.title}
+                  </div>
+                  {isStepDone(i, j, step.actionItems) && (
+                    <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full uppercase">
+                      Completed
+                    </span>
+                  )}
                 </div>
                 <p className="text-sm text-gray-600 mb-3 leading-relaxed">{step.description}</p>
                 {step.actionItems?.length > 0 && (
-                  <ul className="space-y-1.5 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                  <div className="space-y-1.5 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                    <div className="text-[10px] font-bold text-gray-400 uppercase mb-2 tracking-wider">Required Checklist</div>
                     {step.actionItems.map((item, k) => (
-                      <li key={k} className="text-xs flex items-start gap-2 text-gray-600 font-medium">
-                        <Target size={14} className="text-indigo-400 shrink-0 mt-0.5" />
-                        {item}
-                      </li>
+                      <label key={k} className="flex items-start gap-3 p-2 rounded-md hover:bg-white transition-colors cursor-pointer group">
+                        <input 
+                          type="checkbox" 
+                          className="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                          checked={checkedItems[`${i}-${j}-${k}`] || false}
+                          onChange={() => toggleItem(i, j, k)}
+                        />
+                        <span className={`text-xs font-medium transition-all ${checkedItems[`${i}-${j}-${k}`] ? 'text-gray-400 line-through' : 'text-gray-700 group-hover:text-indigo-600'}`}>
+                          {item}
+                        </span>
+                      </label>
                     ))}
-                  </ul>
+                  </div>
                 )}
               </div>
             ))}

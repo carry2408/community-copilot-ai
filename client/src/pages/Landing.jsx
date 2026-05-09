@@ -29,22 +29,22 @@ export default function Landing() {
       {/* Hero */}
       <div className="max-w-[1400px] w-full mx-auto px-6 md:px-12 lg:px-16 pb-24 text-center" style={{ paddingTop: '180px' }}>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-          
+
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-10 text-sm font-medium"
             style={{ background: 'var(--bg-card)', color: 'var(--text-secondary)', border: '1px solid var(--border-subtle)', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
             <Zap size={16} className="text-amber-500" />
-            <span>Powered by 7 Specialized AI Agents</span>
+
           </div>
 
           <h1 className="text-5xl md:text-7xl lg:text-[5.5rem] font-extrabold tracking-tight leading-[1.1] mb-8 text-gray-900">
             Navigate Government <br className="hidden md:block" />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-500">
-              Funding with AI
+              Funding For Startup with AI
             </span>
           </h1>
 
           <p className="text-lg md:text-2xl max-w-4xl mx-auto mb-12 text-gray-500 leading-relaxed font-normal">
-            The intelligent multi-agent platform that discovers schemes, validates eligibility, 
+            The intelligent multi-agent platform that discovers schemes, validates eligibility,
             and creates actionable roadmaps for MSMEs & startups in India.
           </p>
 
@@ -116,7 +116,7 @@ export default function Landing() {
           <span className="font-semibold text-gray-900">Community Copilot AI</span>
         </div>
         <p className="text-sm text-gray-500">
-          Built for the Google AI Hackathon 2025.
+          <p>&copy; 2026 Community Copilot AI. All rights reserved.</p>
         </p>
       </footer>
     </div>
