@@ -12,7 +12,7 @@ import {
   CheckCircle2, AlertCircle, XCircle, Lightbulb,
   AlertTriangle, FileCheck, File, Clock, Zap, Target,
   RotateCcw, Download, Loader2, Bot, ChevronRight, ArrowRight, Info, Sparkles,
-  MessageSquare, Send, X, ExternalLink, Activity, Terminal, ShieldCheck, CheckCircle2 as CheckIcon
+  MessageSquare, Send, X, ExternalLink
 } from 'lucide-react'
 
 function TabButton({ active, onClick, icon, children }) {
@@ -23,177 +23,6 @@ function TabButton({ active, onClick, icon, children }) {
       {icon}
       {children}
     </button>
-  )
-}
-
-function GSTAutomationPanel({ businessDetails }) {
-  const [state, setState] = useState({
-    status: 'idle',
-    currentStep: 'Initial Assessment',
-    actionsCompleted: [],
-    missingInformation: [],
-    requiresUserApproval: false,
-    approvalReason: '',
-    savedWorkflowState: {}
-  })
-  const [loading, setLoading] = useState(false)
-
-  const runStep = async (approval = false) => {
-    setLoading(true)
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/gst/execute`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          businessDetails,
-          uploadedDocuments: [], // Would normally come from store
-          workflowMemory: { 
-            ...state.savedWorkflowState, 
-            actionsCompleted: state.actionsCompleted,
-            userApproved: approval
-          }
-        })
-      })
-      const data = await res.json()
-      setState(data)
-    } catch (err) {
-      console.error('Automation Error:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      {/* Console Side */}
-      <div className="lg:col-span-2 space-y-6">
-        <div className="bg-gray-900 rounded-[2rem] p-8 shadow-2xl border border-gray-800 overflow-hidden relative">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400">
-                <Terminal size={20} />
-              </div>
-              <div>
-                <div className="text-sm font-bold text-white tracking-tight">Autonomous Execution Console</div>
-                <div className="flex items-center gap-2 mt-1">
-                  <div className={`w-2 h-2 rounded-full animate-pulse ${state.status === 'running' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{state.status}</span>
-                </div>
-              </div>
-            </div>
-            {state.status === 'idle' && (
-              <button onClick={() => runStep()} className="px-6 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all">
-                Initiate Workflow
-              </button>
-            )}
-          </div>
-
-          <div className="space-y-4 max-h-[400px] overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-gray-800">
-            {state.actionsCompleted.length === 0 && (
-              <div className="text-gray-600 text-sm italic font-mono">
-                [SYSTEM] Waiting for execution command...
-              </div>
-            )}
-            {state.actionsCompleted.map((action, i) => (
-              <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} key={i} className="flex gap-4 items-start font-mono text-xs">
-                <span className="text-gray-600 shrink-0">{new Date(action.timestamp).toLocaleTimeString()}</span>
-                <span className="text-emerald-400 shrink-0">✓</span>
-                <span className="text-gray-300">{action.action}</span>
-              </motion.div>
-            ))}
-            {loading && (
-              <div className="flex gap-4 items-start font-mono text-xs animate-pulse">
-                <span className="text-gray-600 shrink-0">{new Date().toLocaleTimeString()}</span>
-                <span className="text-indigo-400 shrink-0"><Loader2 size={12} className="animate-spin" /></span>
-                <span className="text-indigo-300">Agent thinking... Analyzing next autonomous step...</span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {state.requiresUserApproval && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} 
-            className="p-8 bg-amber-50 rounded-[2rem] border border-amber-100 shadow-xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-amber-100/50 rounded-full blur-3xl -mr-16 -mt-16" />
-            <div className="relative z-10">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-lg">
-                  <ShieldCheck size={20} />
-                </div>
-                <div>
-                  <h4 className="font-bold text-gray-900">User Approval Required</h4>
-                  <p className="text-xs text-amber-700 font-medium uppercase tracking-wider">Human-In-The-Loop Verification</p>
-                </div>
-              </div>
-              <p className="text-sm text-gray-700 mb-8 leading-relaxed font-medium bg-white/50 p-4 rounded-2xl border border-amber-200">
-                {state.approvalReason}
-              </p>
-              <div className="flex gap-3">
-                <button onClick={() => runStep(true)} className="flex-1 py-3 bg-amber-600 text-white rounded-xl text-sm font-bold hover:bg-amber-700 transition-all shadow-lg shadow-amber-200">
-                  Approve & Continue
-                </button>
-                <button className="flex-1 py-3 bg-white border border-amber-200 text-amber-700 rounded-xl text-sm font-bold hover:bg-amber-100/50 transition-all">
-                  Review Logs
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {state.status === 'running' && !state.requiresUserApproval && (
-          <button 
-            disabled={loading}
-            onClick={() => runStep()}
-            className="w-full py-4 bg-gray-900 text-white rounded-2xl text-sm font-bold flex items-center justify-center gap-3 hover:bg-black transition-all shadow-xl group disabled:opacity-50"
-          >
-            {loading ? <Loader2 size={20} className="animate-spin" /> : <Activity size={20} className="group-hover:animate-bounce" />}
-            Execute Next Autonomous Phase
-          </button>
-        )}
-      </div>
-
-      {/* Info Side */}
-      <div className="space-y-6">
-        <div className="glass-card p-8 bg-white border border-gray-100 shadow-xl rounded-[2rem]">
-          <h4 className="text-sm font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <Bot size={18} className="text-indigo-600" /> Agent Intelligence
-          </h4>
-          <div className="space-y-4">
-            <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
-              <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Current Focus</div>
-              <div className="text-sm font-bold text-gray-700">{state.currentStep}</div>
-            </div>
-            {state.missingInformation.length > 0 && (
-              <div className="p-4 bg-red-50 rounded-2xl border border-red-100">
-                <div className="text-[10px] font-bold text-red-400 uppercase tracking-widest mb-2">Blockers Detected</div>
-                <div className="space-y-2">
-                  {state.missingInformation.map((info, i) => (
-                    <div key={i} className="text-xs text-red-700 font-bold flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bg-red-500 rounded-full" />
-                      {info}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="p-8 bg-indigo-600 rounded-[2rem] shadow-xl text-white relative overflow-hidden">
-          <div className="absolute bottom-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mb-16 -mr-16" />
-          <h4 className="text-sm font-bold mb-4 flex items-center gap-2">
-            <Activity size={18} /> Workflow Status
-          </h4>
-          <p className="text-xs text-indigo-100 leading-relaxed font-medium mb-6">
-            Autonomous agent is navigating the GST portal. Progress is saved locally after every step to ensure resilience.
-          </p>
-          <div className="flex items-center gap-3 bg-white/10 p-4 rounded-2xl backdrop-blur-sm border border-white/10">
-            <CheckIcon size={20} className="text-emerald-400" />
-            <div className="text-xs font-bold">Resilience Engine Active</div>
-          </div>
-        </div>
-      </div>
-    </div>
   )
 }
 
@@ -594,7 +423,7 @@ function SummaryTab({ simplification, eligibilityResults }) {
 
 export default function Dashboard() {
   const navigate = useNavigate()
-  const { status, businessDetails, eligibilityResults, simplification, documents, roadmap, setResults } = useWorkflowStore()
+  const { status, eligibilityResults, simplification, documents, roadmap, setResults } = useWorkflowStore()
   const { currentUser } = useAuth()
   const [activeTab, setActiveTab] = useState('summary')
   const [isExporting, setIsExporting] = useState(false)
@@ -678,7 +507,6 @@ export default function Dashboard() {
     { id: 'eligibility', label: 'Eligibility', icon: <CheckCircle size={16} /> },
     { id: 'documents', label: 'Documents', icon: <Files size={16} /> },
     { id: 'roadmap', label: 'Roadmap', icon: <MapIcon size={16} /> },
-    { id: 'automation', label: 'Automation', icon: <Terminal size={16} /> },
   ]
 
   return (
@@ -759,7 +587,6 @@ export default function Dashboard() {
                   {activeTab === 'eligibility' && <EligibilityTab results={eligibilityResults} />}
                   {activeTab === 'documents' && <DocumentsTab documents={documents} />}
                   {activeTab === 'roadmap' && <RoadmapTab roadmap={roadmap} />}
-                  {activeTab === 'automation' && <GSTAutomationPanel businessDetails={businessDetails} />}
                 </motion.div>
               )}
             </div>
