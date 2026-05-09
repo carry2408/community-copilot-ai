@@ -63,72 +63,73 @@ export default function Landing() {
             </button>
           </div>
         </motion.div>
+      </div>
 
-        {/* Chat Hero Section */}
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          className="relative rounded-[3rem] overflow-hidden mb-32 bg-indigo-600 p-12 md:p-20 text-center text-white shadow-2xl shadow-indigo-200"
-        >
-          <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-white rounded-full blur-[100px]" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-400 rounded-full blur-[100px]" />
+      {/* Chat Hero Section - FULL WIDTH GRADIENT */}
+      <motion.div 
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        className="relative overflow-hidden mb-32 bg-gradient-to-r from-indigo-700 via-indigo-600 to-indigo-800 py-24 md:py-32 text-center text-white shadow-2xl"
+      >
+        <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
+          <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-white rounded-full blur-[120px]" />
+          <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-indigo-400 rounded-full blur-[120px]" />
+        </div>
+
+        <div className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-12 lg:px-16">
+          <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-8 mx-auto backdrop-blur-md border border-white/30">
+            <Bot size={32} />
+          </div>
+          <h2 className="text-4xl md:text-7xl font-black mb-8 tracking-tight leading-tight">Have a question? Just ask.</h2>
+          <p className="text-lg md:text-2xl text-indigo-100 mb-12 leading-relaxed font-medium max-w-4xl mx-auto">
+            Community Copilot can answer questions about any government scheme, <br className="hidden md:block" />
+            document requirements, or application process — instantly.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
+            <button 
+              onClick={() => {
+                setChatTrigger("How can Community Copilot help me?")
+                setTimeout(() => setChatTrigger(null), 100)
+              }}
+              className="bg-white text-indigo-700 px-10 py-5 rounded-2xl font-bold text-xl flex items-center justify-center gap-3 hover:bg-indigo-50 transition-all shadow-2xl"
+            >
+              <MessageSquare size={24} />
+              Open Chat Copilot
+            </button>
+            <button 
+              onClick={() => navigate('/onboarding')}
+              className="bg-white/10 backdrop-blur-md border border-white/30 text-white px-10 py-5 rounded-2xl font-bold text-xl flex items-center justify-center gap-3 hover:bg-white/20 transition-all"
+            >
+              <Sparkles size={24} />
+              Full Analysis
+            </button>
           </div>
 
-          <div className="relative z-10 max-w-4xl mx-auto">
-            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-8 mx-auto backdrop-blur-md">
-              <Bot size={32} />
-            </div>
-            <h2 className="text-4xl md:text-6xl font-black mb-6 tracking-tight">Have a question? Just ask.</h2>
-            <p className="text-lg md:text-xl text-indigo-100 mb-10 leading-relaxed font-medium">
-              Community Copilot can answer questions about any government scheme, <br className="hidden md:block" />
-              document requirements, or application process — instantly.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+          <div className="flex flex-wrap justify-center gap-4">
+            {[
+              "PM Vishwakarma scheme eligibility",
+              "MSME loan subsidy in Karnataka",
+              "Stand Up India for women",
+              "Startup India DPIIT benefits"
+            ].map(pill => (
               <button 
+                key={pill}
                 onClick={() => {
-                  setChatTrigger("How can Community Copilot help me?")
-                  // Small delay to ensure state update triggers the effect
+                  setChatTrigger(pill)
                   setTimeout(() => setChatTrigger(null), 100)
                 }}
-                className="bg-white text-indigo-600 px-8 py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 hover:bg-indigo-50 transition-all shadow-xl"
+                className="bg-white/10 hover:bg-white/20 border border-white/20 px-6 py-3 rounded-full text-sm font-bold backdrop-blur-sm transition-all"
               >
-                <MessageSquare size={20} />
-                Open Chat Copilot
+                {pill}
               </button>
-              <button 
-                onClick={() => navigate('/onboarding')}
-                className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-8 py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 hover:bg-white/20 transition-all"
-              >
-                <Sparkles size={20} />
-                Full Analysis
-              </button>
-            </div>
-
-            <div className="flex flex-wrap justify-center gap-3">
-              {[
-                "PM Vishwakarma scheme eligibility",
-                "MSME loan subsidy in Karnataka",
-                "Stand Up India for women",
-                "Startup India DPIIT benefits"
-              ].map(pill => (
-                <button 
-                  key={pill}
-                  onClick={() => {
-                    setChatTrigger(pill)
-                    setTimeout(() => setChatTrigger(null), 100)
-                  }}
-                  className="bg-white/10 hover:bg-white/20 border border-white/10 px-4 py-2 rounded-full text-xs font-semibold backdrop-blur-sm transition-all"
-                >
-                  {pill}
-                </button>
-              ))}
-            </div>
+            ))}
           </div>
-        </motion.div>
+        </div>
+      </motion.div>
 
+      <div className="max-w-[1400px] w-full mx-auto px-6 md:px-12 lg:px-16">
         {/* Agent Orbit */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.6 }}
