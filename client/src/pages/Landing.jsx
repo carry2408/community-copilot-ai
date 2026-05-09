@@ -1,7 +1,9 @@
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { Brain, Search, Mic, ShieldCheck, FileText, Files, Map as MapIcon, Target, ClipboardList, ArrowRight, Zap, Hexagon } from 'lucide-react'
+import AIChatbot from '../components/chat/AIChatbot'
+import { Brain, Search, Mic, ShieldCheck, FileText, Files, Map as MapIcon, Target, ClipboardList, ArrowRight, Zap, Hexagon, Bot, MessageSquare, Sparkles } from 'lucide-react'
 
 const agents = [
   { icon: <Brain size={18} />, name: 'Intent Agent', color: '#7c3aed' },
@@ -23,6 +25,7 @@ const features = [
 export default function Landing() {
   const navigate = useNavigate()
   const { currentUser } = useAuth()
+  const [isChatOpen, setIsChatOpen] = useState(false)
 
   return (
     <div className="gradient-bg min-h-screen">
@@ -57,6 +60,64 @@ export default function Landing() {
               className="secondary-btn px-10 py-4 text-lg">
               Learn More
             </button>
+          </div>
+        </motion.div>
+
+        {/* Chat Hero Section */}
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          className="relative rounded-[3rem] overflow-hidden mb-32 bg-indigo-600 p-12 md:p-20 text-center text-white shadow-2xl shadow-indigo-200"
+        >
+          <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-white rounded-full blur-[100px]" />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-400 rounded-full blur-[100px]" />
+          </div>
+
+          <div className="relative z-10 max-w-4xl mx-auto">
+            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-8 mx-auto backdrop-blur-md">
+              <Bot size={32} />
+            </div>
+            <h2 className="text-4xl md:text-6xl font-black mb-6 tracking-tight">Have a question? Just ask.</h2>
+            <p className="text-lg md:text-xl text-indigo-100 mb-10 leading-relaxed font-medium">
+              Community Copilot can answer questions about any government scheme, <br className="hidden md:block" />
+              document requirements, or application process — instantly.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+              <button 
+                onClick={() => setIsChatOpen(true)}
+                className="bg-white text-indigo-600 px-8 py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 hover:bg-indigo-50 transition-all shadow-xl"
+              >
+                <MessageSquare size={20} />
+                Open Chat Copilot
+              </button>
+              <button 
+                onClick={() => navigate('/onboarding')}
+                className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-8 py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 hover:bg-white/20 transition-all"
+              >
+                <Sparkles size={20} />
+                Full Analysis
+              </button>
+            </div>
+
+            <div className="flex flex-wrap justify-center gap-3">
+              {[
+                "PM Vishwakarma scheme eligibility",
+                "MSME loan subsidy in Karnataka",
+                "Stand Up India for women",
+                "Startup India DPIIT benefits"
+              ].map(pill => (
+                <button 
+                  key={pill}
+                  onClick={() => setIsChatOpen(true)}
+                  className="bg-white/10 hover:bg-white/20 border border-white/10 px-4 py-2 rounded-full text-xs font-semibold backdrop-blur-sm transition-all"
+                >
+                  {pill}
+                </button>
+              ))}
+            </div>
           </div>
         </motion.div>
 
@@ -119,6 +180,7 @@ export default function Landing() {
           <p>&copy; 2026 Community Copilot AI. All rights reserved.</p>
         </p>
       </footer>
+      <AIChatbot isOpenExternally={isChatOpen} setIsOpenExternally={setIsChatOpen} />
     </div>
   )
 }

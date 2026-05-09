@@ -1,0 +1,158 @@
+import { useState, useEffect, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Bot, X, Send, Loader2, MessageSquare, Sparkles } from 'lucide-react'
+
+export default function AIChatbot({ context, initialMessage, isOpenExternally, setIsOpenExternally }) {
+  const [isOpen, setIsOpen] = useState(false)
+  const [messages, setMessages] = useState([
+    { role: 'assistant', content: initialMessage || "Hi! I'm your Community Copilot AI. How can I help you with government schemes today?" }
+  ])
+  const [input, setInput] = useState('')
+  const [isTyping, setIsTyping] = useState(false)
+  const scrollRef = useRef()
+
+  useEffect(() => {
+    if (isOpenExternally) {
+      setIsOpen(true)
+      if (setIsOpenExternally) setIsOpenExternally(false)
+    }
+  }, [isOpenExternally])
+
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+  }, [messages])
+
+  const suggestions = [
+    "What schemes exist for tech startups?",
+    "I have a textile business in Tamil Nadu",
+    "How do I apply for PMEGP?",
+    "What documents are needed for MSME schemes?"
+  ]
+
+  const handleSend = async (customMsg) => {
+    const userMsg = customMsg || input.trim()
+    if (!userMsg || isTyping) return
+
+    if (!customMsg) setInput('')
+    setMessages(prev => [...prev, { role: 'user', content: userMsg }])
+    setIsTyping(true)
+
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userMsg, context })
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setMessages(prev => [...prev, { role: 'assistant', content: data.response }])
+      } else {
+        setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${data.error || 'Server hiccup. Please try again.'}` }])
+      }
+    } catch (err) {
+      setMessages(prev => [...prev, { role: 'assistant', content: "Connection error. Please check if the server is running." }])
+    } finally {
+      setIsTyping(false)
+    }
+  }
+
+  return (
+    <div className="fixed bottom-6 right-6 z-50" data-html2canvas-ignore>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            className="bg-white w-[350px] sm:w-[400px] h-[600px] rounded-[2rem] shadow-2xl border border-gray-100 flex flex-col overflow-hidden mb-4"
+          >
+            {/* Header */}
+            <div className="bg-indigo-600 p-6 flex justify-between items-center text-white">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                  <Bot size={22} />
+                </div>
+                <div>
+                  <div className="font-bold text-sm">Community Copilot</div>
+                  <div className="text-[10px] opacity-80 flex items-center gap-1">
+                    <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+                    AI Online
+                  </div>
+                </div>
+              </div>
+              <button onClick={() => setIsOpen(false)} className="hover:bg-white/10 p-2 rounded-xl transition-all">
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Messages */}
+            <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 bg-gray-50/30">
+              {messages.map((m, i) => (
+                <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[85%] p-4 rounded-2xl text-sm leading-relaxed ${
+                    m.role === 'user' 
+                      ? 'bg-indigo-600 text-white rounded-tr-none' 
+                      : 'bg-white border border-gray-100 text-gray-700 rounded-tl-none shadow-sm'
+                  }`}>
+                    {m.content}
+                  </div>
+                </div>
+              ))}
+              {isTyping && (
+                <div className="flex justify-start">
+                  <div className="bg-white border border-gray-100 p-4 rounded-2xl rounded-tl-none shadow-sm">
+                    <Loader2 size={18} className="animate-spin text-indigo-500" />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Suggestions */}
+            <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100">
+              <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Quick Questions</div>
+              <div className="space-y-2">
+                {suggestions.map((s, i) => (
+                  <button 
+                    key={i} 
+                    onClick={() => handleSend(s)}
+                    className="w-full text-left p-3 text-xs font-semibold text-indigo-600 bg-indigo-50/50 border border-indigo-100 rounded-xl hover:bg-indigo-600 hover:text-white transition-all"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Input */}
+            <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="p-4 bg-white border-t border-gray-100 flex gap-2">
+              <input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Ask about schemes, eligibility..."
+                className="flex-1 bg-gray-50 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+              />
+              <button 
+                type="submit" 
+                disabled={!input.trim() || isTyping} 
+                className="p-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all disabled:opacity-50 shadow-lg shadow-indigo-100"
+              >
+                <Send size={18} />
+              </button>
+            </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {!isOpen && (
+        <motion.button
+          initial={{ scale: 0 }} animate={{ scale: 1 }}
+          onClick={() => setIsOpen(true)}
+          className="w-16 h-16 bg-indigo-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all group relative border-4 border-white"
+        >
+          <MessageSquare size={28} />
+          <div className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-500 border-4 border-white rounded-full animate-bounce"></div>
+        </motion.button>
+      )}
+    </div>
+  )
+}
