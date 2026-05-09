@@ -29,13 +29,6 @@ export default function AIChatbot({ context, initialMessage, isOpenExternally, s
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight
   }, [messages])
 
-  const suggestions = [
-    "What schemes exist for tech startups?",
-    "I have a textile business in Tamil Nadu",
-    "How do I apply for PMEGP?",
-    "What documents are needed for MSME schemes?"
-  ]
-
   const handleSend = async (customMsg) => {
     const userMsg = customMsg || input.trim()
     if (!userMsg || isTyping) return
@@ -114,23 +107,7 @@ export default function AIChatbot({ context, initialMessage, isOpenExternally, s
               )}
             </div>
 
-            {/* Suggestions */}
-            <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100">
-              <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Quick Questions</div>
-              <div className="space-y-2">
-                {suggestions.map((s, i) => (
-                  <button 
-                    key={i} 
-                    type="button"
-                    disabled={isTyping}
-                    onClick={() => handleSend(s)}
-                    className="w-full text-left p-3 text-xs font-semibold text-indigo-600 bg-indigo-50/50 border border-indigo-100 rounded-xl hover:bg-indigo-600 hover:text-white transition-all disabled:opacity-50"
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
-            </div>
+
 
             {/* Input */}
             <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="p-4 bg-white border-t border-gray-100 flex gap-2">
